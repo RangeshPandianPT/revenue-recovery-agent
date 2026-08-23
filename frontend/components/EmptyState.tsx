@@ -23,6 +23,6 @@ export default function EmptyState({ title, description, actionText, onAction }:
           {actionText}
         </button>
       )}
-    </div>
+    </div>  
   );
 }
