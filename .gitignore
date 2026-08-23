@@ -30,6 +30,10 @@ ml/data/*.parquet
 ml/models/*.pkl
 ml/models/*.joblib
 
+# SQLite (local dev only)
+*.db
+*.sqlite3
+
 # Misc
 .DS_Store
 *.pem
