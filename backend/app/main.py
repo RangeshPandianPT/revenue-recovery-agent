@@ -16,7 +16,12 @@ app.add_middleware(
 )
 
 from app.api.routes_dashboard import router as dashboard_router
+from app.api.routes_recovery import router as recovery_router
+from app.api.routes_batch import router as batch_router
+
 app.include_router(dashboard_router)
+app.include_router(recovery_router)
+app.include_router(batch_router)
 
 @app.get("/api/health")
 def health_check():
