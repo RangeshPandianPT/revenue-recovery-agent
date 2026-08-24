@@ -15,6 +15,9 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+from app.api.routes_dashboard import router as dashboard_router
+app.include_router(dashboard_router)
+
 @app.get("/api/health")
 def health_check():
     return {"status": "ok", "message": "RecoverAI backend is running"}
