@@ -4,38 +4,71 @@ import { useState, useEffect } from 'react';
 import LoadingState from '@/components/LoadingState';
 import EmptyState from '@/components/EmptyState';
 import { ArrowUpRight, IndianRupee, AlertCircle, Activity } from 'lucide-react';
+import toast from 'react-hot-toast';
 
 export default function Dashboard() {
   const [loading, setLoading] = useState(true);
   const [data, setData] = useState<any>(null);
 
-  useEffect(() => {
-    const fetchDashboardData = async () => {
-      try {
-        const response = await fetch('http://localhost:8000/api/dashboard/summary');
-        if (!response.ok) {
-          throw new Error('Failed to fetch dashboard data');
-        }
-        const apiData = await response.json();
-        setData({
-          revenueAtRisk: apiData.total_revenue_at_risk || 0,
-          revenueRecovered: apiData.revenue_recovered || 0,
-          netRevenueRecovered: apiData.revenue_recovered || 0, // Mock net as revenue for now
-          recoveryRate: apiData.recovery_rate || 0,
-          activeCases: apiData.total_cases || 0,
-          actionsExecuted: apiData.actions_executed || 0,
-          openEscalations: apiData.open_escalations || 0,
-          byEventType: apiData.by_event_type || {}
-        });
-      } catch (error) {
-        console.error('Error fetching dashboard summary:', error);
-      } finally {
-        setLoading(false);
-      }
-    };
+  const [isBatchRunning, setIsBatchRunning] = useState(false);
 
+  const fetchDashboardData = async () => {
+    try {
+      const response = await fetch('http://localhost:8000/api/dashboard/summary');
+      if (!response.ok) {
+        throw new Error('Failed to fetch dashboard data');
+      }
+      const apiData = await response.json();
+      setData({
+        revenueAtRisk: apiData.total_revenue_at_risk || 0,
+        revenueRecovered: apiData.revenue_recovered || 0,
+        netRevenueRecovered: apiData.revenue_recovered || 0, // Mock net as revenue for now
+        recoveryRate: apiData.recovery_rate || 0,
+        activeCases: apiData.total_cases || 0,
+        actionsExecuted: apiData.actions_executed || 0,
+        openEscalations: apiData.open_escalations || 0,
+        byEventType: apiData.by_event_type || {}
+      });
+    } catch (error) {
+      console.error('Error fetching dashboard summary:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
     fetchDashboardData();
   }, []);
+
+  const handleRunBatch = async () => {
+    setIsBatchRunning(true);
+    try {
+      const response = await fetch('http://localhost:8000/api/batches/run', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ merchant_id: 'demo_merchant', case_count: 100 }),
+      });
+      if (!response.ok) throw new Error('Batch execution failed');
+      await fetchDashboardData();
+      toast.success('Batch executed successfully!');
+    } catch (error) {
+      console.error(error);
+      toast.error('Failed to execute batch run.');
+    } finally {
+      setIsBatchRunning(false);
+    }
+  };
+
+  const handleExport = () => {
+    if (!data) return;
+    const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(data, null, 2));
+    const downloadAnchorNode = document.createElement('a');
+    downloadAnchorNode.setAttribute("href", dataStr);
+    downloadAnchorNode.setAttribute("download", "dashboard_export.json");
+    document.body.appendChild(downloadAnchorNode);
+    downloadAnchorNode.click();
+    downloadAnchorNode.remove();
+  };
 
   if (loading) {
     return <LoadingState message="Loading dashboard metrics..." />;
@@ -69,11 +102,22 @@ export default function Dashboard() {
           Dashboard Summary
         </h2>
         <div className="flex space-x-3">
-          <button className="inline-flex items-center rounded-md bg-white px-3 py-2 text-sm font-semibold text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 hover:bg-gray-50">
+          <button 
+            onClick={handleExport}
+            className="inline-flex items-center rounded-md bg-white px-3 py-2 text-sm font-semibold text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 hover:bg-gray-50"
+          >
             Export
           </button>
-          <button className="inline-flex items-center rounded-md bg-blue-600 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-blue-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600">
-            Run Batch
+          <button 
+            onClick={handleRunBatch}
+            disabled={isBatchRunning}
+            className={`inline-flex items-center rounded-md px-3 py-2 text-sm font-semibold text-white shadow-sm focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 ${
+              isBatchRunning 
+                ? 'bg-blue-400 cursor-not-allowed' 
+                : 'bg-blue-600 hover:bg-blue-500 focus-visible:outline-blue-600'
+            }`}
+          >
+            {isBatchRunning ? 'Running...' : 'Run Batch'}
           </button>
         </div>
       </div>
