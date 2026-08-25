@@ -1,11 +1,26 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import JSONResponse
+from fastapi import Request
+import logging
 
 app = FastAPI(
     title="RecoverAI",
     description="Autonomous revenue recovery agent",
     version="1.0.0",
 )
+
+# Basic logging setup for Phase 14
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger("recoverai")
+
+@app.exception_handler(Exception)
+async def global_exception_handler(request: Request, exc: Exception):
+    logger.error(f"Unhandled exception: {str(exc)}")
+    return JSONResponse(
+        status_code=500,
+        content={"detail": "An unexpected error occurred. Fallback mechanisms are active."}
+    )
 
 app.add_middleware(
     CORSMiddleware,
