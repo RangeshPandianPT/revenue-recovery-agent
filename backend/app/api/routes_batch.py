@@ -20,7 +20,14 @@ def get_batch(batch_id: str, db: Session = Depends(get_db)):
 
 @router.post("/run", response_model=RecoveryBatchResponse)
 def run_batch(request: RunBatchRequest, db: Session = Depends(get_db)):
-    batch = run_batch_simulation(db, request.merchant_id, request.case_count)
+    merchant_id = request.merchant_id
+    if merchant_id == 'demo_merchant':
+        from app.models.domain import Merchant
+        merchant = db.query(Merchant).first()
+        if merchant:
+            merchant_id = merchant.id
+
+    batch = run_batch_simulation(db, merchant_id, request.case_count)
     if not batch:
         raise HTTPException(status_code=400, detail="Could not create batch. No pending opportunities found.")
     return batch

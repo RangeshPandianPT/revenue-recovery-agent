@@ -1,5 +1,5 @@
 from sqlalchemy.orm import Session
-from app.models.domain import RecoveryOpportunity, RecoveryAction, Escalation, PromiseToPay, StrategyType, RecoveryStatus
+from app.models.domain import RecoveryOpportunity, RecoveryAction, Escalation, PromiseToPay, StrategyType, RecoveryStatus, AuditLog
 from app.schemas.recovery import RecoveryActionCreate, EscalationCreate, PromiseToPayCreate
 from datetime import datetime, timedelta
 
@@ -14,6 +14,17 @@ def execute_strategy(db: Session, opportunity_id: str, strategy: StrategyType, d
         action_type=strategy,
         status="SUCCESS",
         cost=0.0
+    )
+    
+    audit_log = AuditLog(
+        merchant_id=opportunity.merchant_id,
+        opportunity_id=opportunity_id,
+        actor="AI_AGENT",
+        action=f"Execute {strategy.value}",
+        reason=details if details else f"AI selected {strategy.value} as the best intervention",
+        policy_decision="PASSED",
+        outcome="Strategy Scheduled",
+        revenue_impact=0.0
     )
 
     if strategy == StrategyType.SMART_RETRY:
@@ -50,6 +61,7 @@ def execute_strategy(db: Session, opportunity_id: str, strategy: StrategyType, d
         action.status = "SUCCESS"
 
     db.add(action)
+    db.add(audit_log)
     db.commit()
     db.refresh(action)
     return action
@@ -58,6 +70,18 @@ def handle_successful_recovery(db: Session, opportunity_id: str, amount_recovere
     opportunity = db.query(RecoveryOpportunity).filter(RecoveryOpportunity.id == opportunity_id).first()
     if opportunity:
         opportunity.status = RecoveryStatus.RECOVERED
+        
+        audit_log = AuditLog(
+            merchant_id=opportunity.merchant_id,
+            opportunity_id=opportunity_id,
+            actor="SYSTEM",
+            action="Payment Successful",
+            reason="Confirmed via Razorpay Webhook",
+            policy_decision="N/A",
+            outcome="STOPPED - Goal Reached",
+            revenue_impact=amount_recovered - cost
+        )
+        db.add(audit_log)
         db.commit()
         db.refresh(opportunity)
     return opportunity

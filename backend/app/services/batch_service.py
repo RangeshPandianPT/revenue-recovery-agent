@@ -1,6 +1,6 @@
 import random
 from sqlalchemy.orm import Session
-from app.models.domain import RecoveryBatch, BatchCase, RecoveryOpportunity, RecoveryStatus, StrategyType, Transaction, Policy
+from app.models.domain import RecoveryBatch, BatchCase, RecoveryOpportunity, RecoveryStatus, StrategyType, Transaction, Policy, Customer
 from app.services.recovery_service import execute_strategy, handle_successful_recovery
 from app.services.risk_engine import risk_engine
 from app.services.ml_service import ml_service
@@ -65,8 +65,10 @@ def run_batch_simulation(db: Session, merchant_id: str, num_cases: int = 100):
         transaction = db.query(Transaction).filter(Transaction.id == opp.transaction_id).first()
         transaction_amount = transaction.amount if transaction else opp.amount
         
+        customer = db.query(Customer).filter(Customer.id == opp.customer_id).first()
+        
         prob, _, _ = ml_service.predict_recovery_probability({
-            'customer_lifetime_value': opp.customer.lifetime_value if opp.customer else 0,
+            'customer_lifetime_value': customer.lifetime_value if customer else 0,
             'root_cause': "TEMPORARY_BANK_FAILURE",
             'previous_failures': 0
         })
