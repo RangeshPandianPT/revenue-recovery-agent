@@ -10,21 +10,31 @@ export default function Dashboard() {
   const [data, setData] = useState<any>(null);
 
   useEffect(() => {
-    // Simulate API fetch
-    const timer = setTimeout(() => {
-      setData({
-        revenueAtRisk: 4820000,
-        revenueRecovered: 2914000,
-        netRevenueRecovered: 2786400,
-        recoveryRate: 60.46,
-        activeCases: 124,
-        highPriority: 12,
-        escalated: 8,
-        stopped: 45
-      });
-      setLoading(false);
-    }, 1000);
-    return () => clearTimeout(timer);
+    const fetchDashboardData = async () => {
+      try {
+        const response = await fetch('http://localhost:8000/api/dashboard/summary');
+        if (!response.ok) {
+          throw new Error('Failed to fetch dashboard data');
+        }
+        const apiData = await response.json();
+        setData({
+          revenueAtRisk: apiData.total_revenue_at_risk || 0,
+          revenueRecovered: apiData.revenue_recovered || 0,
+          netRevenueRecovered: apiData.revenue_recovered || 0, // Mock net as revenue for now
+          recoveryRate: apiData.recovery_rate || 0,
+          activeCases: apiData.total_cases || 0,
+          actionsExecuted: apiData.actions_executed || 0,
+          openEscalations: apiData.open_escalations || 0,
+          byEventType: apiData.by_event_type || {}
+        });
+      } catch (error) {
+        console.error('Error fetching dashboard summary:', error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchDashboardData();
   }, []);
 
   if (loading) {
@@ -154,14 +164,50 @@ export default function Dashboard() {
         </div>
       </div>
       
-      {/* Empty Chart Placeholder */}
-      <div className="mt-8 rounded-lg bg-white shadow p-6 h-96 flex flex-col">
-        <h3 className="text-lg font-medium leading-6 text-gray-900 mb-4">Recovery Pipeline</h3>
-        <div className="flex-1 flex items-center justify-center border-2 border-dashed border-gray-200 rounded-lg">
-          <EmptyState 
-            title="Charts Placeholder" 
-            description="Integration with Chart.js or Recharts will be implemented in the Analytics phase." 
-          />
+      {/* Analytics Details */}
+      <div className="grid grid-cols-1 gap-5 lg:grid-cols-2 mt-8">
+        <div className="rounded-lg bg-white shadow p-6 flex flex-col">
+          <h3 className="text-lg font-medium leading-6 text-gray-900 mb-4">Risk by Event Type</h3>
+          <div className="flex-1">
+            {data.byEventType && Object.keys(data.byEventType).length > 0 ? (
+              <ul className="divide-y divide-gray-200">
+                {Object.entries(data.byEventType).map(([type, stats]: [string, any]) => (
+                  <li key={type} className="py-4 flex justify-between">
+                    <div>
+                      <p className="text-sm font-medium text-gray-900">{type.replace('_', ' ')}</p>
+                      <p className="text-sm text-gray-500">{stats.count} cases</p>
+                    </div>
+                    <div className="text-sm font-semibold text-gray-900">
+                      {formatCurrency(stats.amount)}
+                    </div>
+                  </li>
+                ))}
+              </ul>
+            ) : (
+              <EmptyState 
+                title="No Data" 
+                description="No events found in the system." 
+              />
+            )}
+          </div>
+        </div>
+
+        <div className="rounded-lg bg-white shadow p-6 flex flex-col">
+          <h3 className="text-lg font-medium leading-6 text-gray-900 mb-4">Action Summary</h3>
+          <div className="flex-1 flex flex-col space-y-4">
+             <div className="bg-blue-50 p-4 rounded-md">
+                <p className="text-sm font-medium text-blue-800">Total Cases</p>
+                <p className="text-2xl font-bold text-blue-900">{data.activeCases}</p>
+             </div>
+             <div className="bg-green-50 p-4 rounded-md">
+                <p className="text-sm font-medium text-green-800">Actions Executed</p>
+                <p className="text-2xl font-bold text-green-900">{data.actionsExecuted}</p>
+             </div>
+             <div className="bg-red-50 p-4 rounded-md">
+                <p className="text-sm font-medium text-red-800">Open Escalations</p>
+                <p className="text-2xl font-bold text-red-900">{data.openEscalations}</p>
+             </div>
+          </div>
         </div>
       </div>
     </div>
