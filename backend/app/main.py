@@ -19,11 +19,21 @@ from app.api.routes_dashboard import router as dashboard_router
 from app.api.routes_recovery import router as recovery_router
 from app.api.routes_batch import router as batch_router
 from app.api.routes_audit import router as audit_router
+from app.api.routes_webhooks import router as webhooks_router
+from app.api.routes_escalations import router as escalations_router
 
 app.include_router(dashboard_router)
 app.include_router(recovery_router)
 app.include_router(batch_router)
 app.include_router(audit_router)
+app.include_router(webhooks_router)
+app.include_router(escalations_router)
+
+from fastapi.responses import RedirectResponse
+
+@app.get("/")
+def read_root():
+    return RedirectResponse(url="/docs")
 
 @app.get("/api/health")
 def health_check():
