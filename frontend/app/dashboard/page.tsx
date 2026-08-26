@@ -5,6 +5,7 @@ import LoadingState from '@/components/LoadingState';
 import EmptyState from '@/components/EmptyState';
 import { ArrowUpRight, IndianRupee, AlertCircle, Activity } from 'lucide-react';
 import toast from 'react-hot-toast';
+import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
 
 export default function Dashboard() {
   const [loading, setLoading] = useState(true);
@@ -96,25 +97,26 @@ export default function Dashboard() {
   };
 
   return (
-    <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <h2 className="text-2xl font-bold leading-7 text-gray-900 sm:truncate sm:text-3xl sm:tracking-tight">
-          Dashboard Summary
+    <div className="space-y-8 font-mono">
+      {/* Header Area */}
+      <div className="flex items-center justify-between border-b border-gray-200 pb-4">
+        <h2 className="text-xl font-semibold text-gray-900">
+          Revenue Recovery Overview
         </h2>
-        <div className="flex space-x-3">
+        <div className="flex space-x-4">
           <button 
             onClick={handleExport}
-            className="inline-flex items-center rounded-md bg-white px-3 py-2 text-sm font-semibold text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 hover:bg-gray-50"
+            className="inline-flex items-center rounded bg-white border border-gray-300 px-3 py-1.5 text-sm font-medium text-gray-700 hover:bg-gray-50 transition-colors shadow-sm"
           >
             Export
           </button>
           <button 
             onClick={handleRunBatch}
             disabled={isBatchRunning}
-            className={`inline-flex items-center rounded-md px-3 py-2 text-sm font-semibold text-white shadow-sm focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 ${
+            className={`inline-flex items-center rounded px-3 py-1.5 text-sm font-medium text-white transition-colors shadow-sm ${
               isBatchRunning 
-                ? 'bg-blue-400 cursor-not-allowed' 
-                : 'bg-blue-600 hover:bg-blue-500 focus-visible:outline-blue-600'
+                ? 'bg-green-400 cursor-not-allowed' 
+                : 'bg-green-600 hover:bg-green-500'
             }`}
           >
             {isBatchRunning ? 'Running...' : 'Run Batch'}
@@ -122,135 +124,228 @@ export default function Dashboard() {
         </div>
       </div>
 
-      <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-4">
-        {/* Metric 1 */}
-        <div className="overflow-hidden rounded-lg bg-white shadow">
-          <div className="p-5">
-            <div className="flex items-center">
-              <div className="flex-shrink-0">
-                <AlertCircle className="h-6 w-6 text-red-400" aria-hidden="true" />
-              </div>
-              <div className="ml-5 w-0 flex-1">
-                <dl>
-                  <dt className="truncate text-sm font-medium text-gray-500">Revenue at Risk</dt>
-                  <dd className="mt-1 flex items-baseline justify-between sm:block lg:flex">
-                    <div className="flex items-baseline text-2xl font-bold text-gray-900">
-                      {formatCurrency(data.revenueAtRisk)}
-                    </div>
-                  </dd>
-                </dl>
-              </div>
-            </div>
-          </div>
+      {/* Overview Cards Row 1 */}
+      <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
+        <div className="rounded-lg border border-gray-200 bg-white shadow-sm p-5 relative overflow-hidden group">
+          <div className="absolute inset-0 bg-gradient-to-br from-red-50 to-transparent opacity-0 group-hover:opacity-100 transition-opacity"></div>
+          <p className="text-2xl font-bold text-gray-900 mb-1">{formatCurrency(data.revenueAtRisk)}</p>
+          <p className="text-sm text-gray-500 uppercase tracking-wider">At Risk</p>
+        </div>
+        
+        <div className="rounded-lg border border-gray-200 bg-white shadow-sm p-5 relative overflow-hidden group">
+          <div className="absolute inset-0 bg-gradient-to-br from-green-50 to-transparent opacity-0 group-hover:opacity-100 transition-opacity"></div>
+          <p className="text-2xl font-bold text-gray-900 mb-1">{formatCurrency(data.revenueRecovered)}</p>
+          <p className="text-sm text-gray-500 uppercase tracking-wider">Recovered</p>
         </div>
 
-        {/* Metric 2 */}
-        <div className="overflow-hidden rounded-lg bg-white shadow">
-          <div className="p-5">
-            <div className="flex items-center">
-              <div className="flex-shrink-0">
-                <IndianRupee className="h-6 w-6 text-green-400" aria-hidden="true" />
-              </div>
-              <div className="ml-5 w-0 flex-1">
-                <dl>
-                  <dt className="truncate text-sm font-medium text-gray-500">Revenue Recovered</dt>
-                  <dd className="mt-1 flex items-baseline justify-between sm:block lg:flex">
-                    <div className="flex items-baseline text-2xl font-bold text-gray-900">
-                      {formatCurrency(data.revenueRecovered)}
-                    </div>
-                  </dd>
-                </dl>
-              </div>
-            </div>
-          </div>
+        <div className="rounded-lg border border-gray-200 bg-white shadow-sm p-5 relative overflow-hidden group">
+          <div className="absolute inset-0 bg-gradient-to-br from-blue-50 to-transparent opacity-0 group-hover:opacity-100 transition-opacity"></div>
+          <p className="text-2xl font-bold text-gray-900 mb-1">{data.recoveryRate}%</p>
+          <p className="text-sm text-gray-500 uppercase tracking-wider">Recovery</p>
+        </div>
+      </div>
+
+      {/* Overview Cards Row 2 */}
+      <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
+        <div className="rounded-lg border border-gray-200 bg-white shadow-sm p-5 relative overflow-hidden group">
+          <div className="absolute inset-0 bg-gradient-to-br from-purple-50 to-transparent opacity-0 group-hover:opacity-100 transition-opacity"></div>
+          <p className="text-2xl font-bold text-gray-900 mb-1">{formatCurrency(data.netRevenueRecovered)}</p>
+          <p className="text-sm text-gray-500 uppercase tracking-wider">Net</p>
         </div>
 
-        {/* Metric 3 */}
-        <div className="overflow-hidden rounded-lg bg-white shadow">
-          <div className="p-5">
-            <div className="flex items-center">
-              <div className="flex-shrink-0">
-                <ArrowUpRight className="h-6 w-6 text-blue-400" aria-hidden="true" />
-              </div>
-              <div className="ml-5 w-0 flex-1">
-                <dl>
-                  <dt className="truncate text-sm font-medium text-gray-500">Net Revenue Recovered</dt>
-                  <dd className="mt-1 flex items-baseline justify-between sm:block lg:flex">
-                    <div className="flex items-baseline text-2xl font-bold text-gray-900">
-                      {formatCurrency(data.netRevenueRecovered)}
-                    </div>
-                  </dd>
-                </dl>
-              </div>
-            </div>
-          </div>
+        <div className="rounded-lg border border-gray-200 bg-white shadow-sm p-5 relative overflow-hidden group">
+          <div className="absolute inset-0 bg-gradient-to-br from-orange-50 to-transparent opacity-0 group-hover:opacity-100 transition-opacity"></div>
+          <p className="text-2xl font-bold text-gray-900 mb-1">{data.openEscalations}</p>
+          <p className="text-sm text-gray-500 uppercase tracking-wider">Escalated</p>
         </div>
+      </div>
 
-        {/* Metric 4 */}
-        <div className="overflow-hidden rounded-lg bg-white shadow">
-          <div className="p-5">
-            <div className="flex items-center">
-              <div className="flex-shrink-0">
-                <Activity className="h-6 w-6 text-purple-400" aria-hidden="true" />
-              </div>
-              <div className="ml-5 w-0 flex-1">
-                <dl>
-                  <dt className="truncate text-sm font-medium text-gray-500">Recovery Rate</dt>
-                  <dd className="mt-1 flex items-baseline justify-between sm:block lg:flex">
-                    <div className="flex items-baseline text-2xl font-bold text-gray-900">
-                      {data.recoveryRate}%
-                    </div>
-                  </dd>
-                </dl>
-              </div>
-            </div>
+      {/* Real Chart */}
+      <div className="mt-8">
+        <h3 className="text-lg font-medium text-gray-800 mb-3">Revenue Recovery Chart</h3>
+        <div className="rounded-lg border border-gray-200 bg-white shadow-sm p-6 h-[400px]">
+          <ResponsiveContainer width="100%" height="100%">
+            <LineChart data={[
+              { name: 'Mon', recovered: 4000, atRisk: 2400 },
+              { name: 'Tue', recovered: 3000, atRisk: 1398 },
+              { name: 'Wed', recovered: 5000, atRisk: 9800 },
+              { name: 'Thu', recovered: 2780, atRisk: 3908 },
+              { name: 'Fri', recovered: 6890, atRisk: 4800 },
+              { name: 'Sat', recovered: 2390, atRisk: 3800 },
+              { name: 'Sun', recovered: 7490, atRisk: 4300 },
+            ]}>
+              <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#e5e7eb" />
+              <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{ fill: '#6b7280', fontSize: 12 }} dy={10} />
+              <YAxis axisLine={false} tickLine={false} tick={{ fill: '#6b7280', fontSize: 12 }} dx={-10} />
+              <Tooltip 
+                contentStyle={{ borderRadius: '8px', border: 'none', boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1)' }}
+              />
+              <Line type="monotone" dataKey="recovered" name="Recovered (₹)" stroke="#16a34a" strokeWidth={2} dot={{ r: 4, strokeWidth: 2, fill: '#16a34a' }} activeDot={{ r: 6 }} />
+              <Line type="monotone" dataKey="atRisk" name="At Risk (₹)" stroke="#dc2626" strokeWidth={2} dot={{ r: 4, strokeWidth: 2, fill: '#dc2626' }} activeDot={{ r: 6 }} />
+            </LineChart>
+          </ResponsiveContainer>
+        </div>
+      </div>
+
+      {/* Funnel */}
+      <div className="mt-8">
+        <h3 className="text-lg font-medium text-gray-800 mb-3">Revenue Leakage Funnel</h3>
+        <div className="rounded-lg border border-gray-200 bg-white shadow-sm p-4">
+          <div className="flex flex-wrap items-center text-sm sm:text-base text-gray-700 gap-2">
+            <span className="text-red-600 font-medium">At Risk</span>
+            <span className="text-gray-400">{"->"}</span>
+            <span className="text-orange-600 font-medium">Recoverable</span>
+            <span className="text-gray-400">{"->"}</span>
+            <span className="text-blue-600 font-medium">Actioned</span>
+            <span className="text-gray-400">{"->"}</span>
+            <span className="text-green-600 font-bold">Recovered</span>
           </div>
         </div>
       </div>
-      
-      {/* Analytics Details */}
-      <div className="grid grid-cols-1 gap-5 lg:grid-cols-2 mt-8">
-        <div className="rounded-lg bg-white shadow p-6 flex flex-col">
-          <h3 className="text-lg font-medium leading-6 text-gray-900 mb-4">Risk by Event Type</h3>
-          <div className="flex-1">
-            {data.byEventType && Object.keys(data.byEventType).length > 0 ? (
-              <ul className="divide-y divide-gray-200">
-                {Object.entries(data.byEventType).map(([type, stats]: [string, any]) => (
-                  <li key={type} className="py-4 flex justify-between">
-                    <div>
-                      <p className="text-sm font-medium text-gray-900">{type.replace('_', ' ')}</p>
-                      <p className="text-sm text-gray-500">{stats.count} cases</p>
-                    </div>
-                    <div className="text-sm font-semibold text-gray-900">
-                      {formatCurrency(stats.amount)}
-                    </div>
-                  </li>
-                ))}
-              </ul>
-            ) : (
-              <EmptyState 
-                title="No Data" 
-                description="No events found in the system." 
-              />
-            )}
-          </div>
-        </div>
 
-        <div className="rounded-lg bg-white shadow p-6 flex flex-col">
-          <h3 className="text-lg font-medium leading-6 text-gray-900 mb-4">Action Summary</h3>
-          <div className="flex-1 flex flex-col space-y-4">
-             <div className="bg-blue-50 p-4 rounded-md">
-                <p className="text-sm font-medium text-blue-800">Total Cases</p>
-                <p className="text-2xl font-bold text-blue-900">{data.activeCases}</p>
-             </div>
-             <div className="bg-green-50 p-4 rounded-md">
-                <p className="text-sm font-medium text-green-800">Actions Executed</p>
-                <p className="text-2xl font-bold text-green-900">{data.actionsExecuted}</p>
-             </div>
-             <div className="bg-red-50 p-4 rounded-md">
-                <p className="text-sm font-medium text-red-800">Open Escalations</p>
-                <p className="text-2xl font-bold text-red-900">{data.openEscalations}</p>
-             </div>
+      {/* AI Agent Execution Detail */}
+      <div className="mt-8 mb-8">
+        <h3 className="text-lg font-medium text-gray-800 mb-3">Recent AI Recovery Trace</h3>
+        <div className="rounded-lg border border-gray-200 bg-white shadow-sm overflow-hidden flex flex-col md:flex-row">
+          
+          {/* Left Column: Transaction & Workflow */}
+          <div className="p-6 border-b md:border-b-0 md:border-r border-gray-200 flex-1 bg-gray-50/50">
+            <div className="flex justify-between items-start mb-6 pb-6 border-b border-gray-200">
+              <div>
+                <p className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-1">Transaction</p>
+                <p className="text-sm font-medium text-gray-900 font-mono">TXN-78291</p>
+                <p className="text-sm text-gray-600 mt-0.5 font-mono">₹8,499</p>
+              </div>
+              <div className="text-right">
+                <p className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-1">Customer</p>
+                <p className="text-sm font-medium text-gray-900 font-mono">Customer #10492</p>
+                <p className="text-sm text-gray-600 mt-0.5 font-mono">LTV: ₹84,500</p>
+              </div>
+            </div>
+
+            <div className="space-y-0 relative">
+              <p className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-4">Execution Trace</p>
+              
+              <div className="flex items-start group">
+                <div className="flex-shrink-0 h-6 w-6 rounded-full bg-green-100 flex items-center justify-center relative z-10 border-2 border-white shadow-sm">
+                  <span className="text-green-600 text-[10px] font-bold">✓</span>
+                </div>
+                <div className="ml-4 pb-4">
+                  <p className="text-sm font-medium text-gray-800">Revenue Risk Detected</p>
+                </div>
+              </div>
+
+              <div className="absolute left-[11px] top-[40px] bottom-8 w-0.5 bg-gray-200"></div>
+
+              <div className="flex items-start group relative z-10">
+                <div className="flex-shrink-0 h-6 w-6 rounded-full bg-green-100 flex items-center justify-center border-2 border-white shadow-sm">
+                  <span className="text-green-600 text-[10px] font-bold">✓</span>
+                </div>
+                <div className="ml-4 pb-4">
+                  <p className="text-sm font-medium text-gray-800">Customer Context Loaded</p>
+                </div>
+              </div>
+
+              <div className="flex items-start group relative z-10">
+                <div className="flex-shrink-0 h-6 w-6 rounded-full bg-green-100 flex items-center justify-center border-2 border-white shadow-sm">
+                  <span className="text-green-600 text-[10px] font-bold">✓</span>
+                </div>
+                <div className="ml-4 pb-4">
+                  <p className="text-sm font-medium text-gray-800">Root Cause Identified</p>
+                </div>
+              </div>
+              
+              <div className="flex items-start group relative z-10">
+                <div className="flex-shrink-0 h-6 w-6 rounded-full bg-green-100 flex items-center justify-center border-2 border-white shadow-sm">
+                  <span className="text-green-600 text-[10px] font-bold">✓</span>
+                </div>
+                <div className="ml-4 pb-4">
+                  <p className="text-sm font-medium text-gray-800">Recovery Probability: <span className="text-green-600 font-mono">87%</span></p>
+                </div>
+              </div>
+              
+              <div className="flex items-start group relative z-10">
+                <div className="flex-shrink-0 h-6 w-6 rounded-full bg-green-100 flex items-center justify-center border-2 border-white shadow-sm">
+                  <span className="text-green-600 text-[10px] font-bold">✓</span>
+                </div>
+                <div className="ml-4 pb-4">
+                  <p className="text-sm font-medium text-gray-800">Strategy Selected: <span className="text-blue-600 font-bold uppercase text-xs tracking-wider">Smart Retry</span></p>
+                </div>
+              </div>
+              
+              <div className="flex items-start group relative z-10">
+                <div className="flex-shrink-0 h-6 w-6 rounded-full bg-green-100 flex items-center justify-center border-2 border-white shadow-sm">
+                  <span className="text-green-600 text-[10px] font-bold">✓</span>
+                </div>
+                <div className="ml-4 pb-4">
+                  <p className="text-sm font-medium text-gray-800">Policy Validation: <span className="text-green-600 font-semibold">PASSED</span></p>
+                </div>
+              </div>
+              
+              <div className="flex items-start group relative z-10">
+                <div className="flex-shrink-0 h-6 w-6 rounded-full bg-blue-100 flex items-center justify-center border-2 border-white shadow-sm">
+                  <span className="text-blue-600 text-[12px] font-bold">→</span>
+                </div>
+                <div className="ml-4 pb-4">
+                  <p className="text-sm font-medium text-gray-800">Executing Recovery</p>
+                </div>
+              </div>
+              
+              <div className="flex items-start group relative z-10">
+                <div className="flex-shrink-0 h-6 w-6 rounded-full bg-green-100 flex items-center justify-center border-2 border-white shadow-sm">
+                  <span className="text-green-600 text-[10px] font-bold">✓</span>
+                </div>
+                <div className="ml-4">
+                  <p className="text-sm font-medium text-gray-800">Payment Recovered</p>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* Right Column: Recovery Result */}
+          <div className="p-6 md:w-80 lg:w-96 bg-white flex flex-col justify-between">
+            <div>
+              <p className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-6">Recovery Result</p>
+              <dl className="space-y-4">
+                <div className="flex justify-between">
+                  <dt className="text-sm text-gray-600">Amount Recovered</dt>
+                  <dd className="text-sm font-semibold text-gray-900 font-mono">₹8,499</dd>
+                </div>
+                <div className="flex justify-between">
+                  <dt className="text-sm text-gray-600">Recovery Probability</dt>
+                  <dd className="text-sm font-semibold text-gray-900 font-mono">87%</dd>
+                </div>
+                <div className="flex justify-between">
+                  <dt className="text-sm text-gray-600">Strategy</dt>
+                  <dd className="text-sm font-medium text-gray-900">Smart Retry</dd>
+                </div>
+                <div className="flex justify-between">
+                  <dt className="text-sm text-gray-600">AI Confidence</dt>
+                  <dd className="text-sm font-semibold text-gray-900 font-mono">91%</dd>
+                </div>
+                <div className="flex justify-between">
+                  <dt className="text-sm text-gray-600">Expected Net Revenue</dt>
+                  <dd className="text-sm font-semibold text-gray-900 font-mono">₹7,394</dd>
+                </div>
+                <div className="flex justify-between pt-4 border-t border-gray-100">
+                  <dt className="text-sm font-medium text-gray-900">Actual Revenue</dt>
+                  <dd className="text-sm font-bold text-green-600 font-mono">₹8,499</dd>
+                </div>
+              </dl>
+            </div>
+            
+            <div className="mt-8 pt-6 border-t border-gray-100">
+              <div className="flex justify-between items-center mb-3">
+                <span className="text-sm text-gray-600">Workflow Status</span>
+                <span className="inline-flex items-center rounded-md bg-gray-100 px-2.5 py-1 text-xs font-medium text-gray-600 border border-gray-200">
+                  STOPPED
+                </span>
+              </div>
+              <div className="flex justify-between items-center">
+                <span className="text-sm text-gray-600">Stop Reason</span>
+                <span className="text-sm font-medium text-gray-900 bg-green-50 text-green-700 px-2 py-0.5 rounded">Payment Successful</span>
+              </div>
+            </div>
           </div>
         </div>
       </div>
