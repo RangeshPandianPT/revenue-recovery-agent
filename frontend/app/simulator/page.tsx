@@ -77,7 +77,7 @@ export default function Simulator() {
                 type="number"
                 value={inputs.revenueRisk}
                 onChange={(e) => setInputs({...inputs, revenueRisk: Number(e.target.value)})}
-                className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm p-2 border"
+                className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm p-2 border text-gray-900 font-bold"
               />
             </div>
             <div>
@@ -86,7 +86,7 @@ export default function Simulator() {
                 type="number"
                 value={inputs.cases}
                 onChange={(e) => setInputs({...inputs, cases: Number(e.target.value)})}
-                className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm p-2 border"
+                className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm p-2 border text-gray-900 font-bold"
               />
             </div>
             <div>
@@ -95,7 +95,7 @@ export default function Simulator() {
                 type="number"
                 value={inputs.avgTransaction}
                 onChange={(e) => setInputs({...inputs, avgTransaction: Number(e.target.value)})}
-                className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm p-2 border"
+                className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm p-2 border text-gray-900 font-bold"
               />
             </div>
 

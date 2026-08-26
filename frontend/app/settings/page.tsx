@@ -38,7 +38,7 @@ export default function Settings() {
               <div className="sm:col-span-3">
                 <label className="block text-sm font-medium text-gray-700">AI Provider</label>
                 <div className="mt-1">
-                  <select className="block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm p-2 border">
+                  <select className="block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm p-2 border text-gray-900 font-bold">
                     <option>Local AI (Qwen via Ollama)</option>
                     <option>Cloud AI (Gemini)</option>
                     <option>Demo Fallback Engine</option>
@@ -49,7 +49,7 @@ export default function Settings() {
               <div className="sm:col-span-3">
                 <label className="block text-sm font-medium text-gray-700">Min. Recovery Probability</label>
                 <div className="mt-1">
-                  <input type="number" defaultValue={30} className="block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm p-2 border" />
+                  <input type="number" defaultValue={30} className="block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm p-2 border text-gray-900 font-bold" />
                 </div>
                 <p className="mt-1 text-xs text-gray-500">Action blocked below this %</p>
               </div>
@@ -57,14 +57,14 @@ export default function Settings() {
               <div className="sm:col-span-3">
                 <label className="block text-sm font-medium text-gray-700">Max Payment Retries</label>
                 <div className="mt-1">
-                  <input type="number" defaultValue={2} className="block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm p-2 border" />
+                  <input type="number" defaultValue={2} className="block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm p-2 border text-gray-900 font-bold" />
                 </div>
               </div>
 
               <div className="sm:col-span-3">
                 <label className="block text-sm font-medium text-gray-700">Max Communication Limits</label>
                 <div className="mt-1">
-                  <input type="number" defaultValue={2} className="block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm p-2 border" />
+                  <input type="number" defaultValue={2} className="block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm p-2 border text-gray-900 font-bold" />
                 </div>
               </div>
             </div>
