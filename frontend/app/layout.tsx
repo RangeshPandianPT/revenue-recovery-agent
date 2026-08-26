@@ -28,16 +28,25 @@ export default function RootLayout({
   return (
     <html lang="en" className="h-full bg-gray-50">
       <body
-        className={`${geistSans.variable} ${geistMono.variable} antialiased h-full flex overflow-hidden text-gray-900`}
+        className={`${geistSans.variable} ${geistMono.variable} antialiased h-full flex overflow-hidden text-gray-900 bg-gray-50 selection:bg-blue-200`}
       >
         <Sidebar />
-        <div className="flex-1 flex flex-col min-w-0 overflow-hidden">
+        <div className="flex-1 flex flex-col min-w-0 overflow-hidden bg-gray-50">
           <Header />
-          <main className="flex-1 overflow-y-auto p-6 bg-gray-50">
+          <main className="flex-1 overflow-y-auto p-6 lg:p-8">
             {children}
           </main>
         </div>
-        <Toaster position="top-right" />
+        <Toaster 
+          position="top-right" 
+          toastOptions={{
+            style: {
+              background: '#fff',
+              color: '#333',
+              border: '1px solid #eaeaea'
+            }
+          }}
+        />
       </body>
     </html>
   );
