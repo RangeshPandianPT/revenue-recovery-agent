@@ -97,10 +97,10 @@ export default function Dashboard() {
   };
 
   return (
-    <div className="space-y-8 font-mono">
+    <div className="space-y-8">
       {/* Header Area */}
       <div className="flex items-center justify-between border-b border-gray-200 pb-4">
-        <h2 className="text-xl font-semibold text-gray-900">
+        <h2 className="text-2xl font-bold text-gray-900 tracking-tight">
           Revenue Recovery Overview
         </h2>
         <div className="flex space-x-4">
@@ -128,20 +128,20 @@ export default function Dashboard() {
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
         <div className="rounded-lg border border-gray-200 bg-white shadow-sm p-5 relative overflow-hidden group">
           <div className="absolute inset-0 bg-gradient-to-br from-red-50 to-transparent opacity-0 group-hover:opacity-100 transition-opacity"></div>
-          <p className="text-2xl font-bold text-gray-900 mb-1">{formatCurrency(data.revenueAtRisk)}</p>
-          <p className="text-sm text-gray-500 uppercase tracking-wider">At Risk</p>
+          <p className="text-sm font-bold text-gray-900 mb-1 truncate">{formatCurrency(data.revenueAtRisk)}</p>
+          <p className="text-xs text-gray-500 uppercase tracking-wider">At Risk</p>
         </div>
         
         <div className="rounded-lg border border-gray-200 bg-white shadow-sm p-5 relative overflow-hidden group">
           <div className="absolute inset-0 bg-gradient-to-br from-green-50 to-transparent opacity-0 group-hover:opacity-100 transition-opacity"></div>
-          <p className="text-2xl font-bold text-gray-900 mb-1">{formatCurrency(data.revenueRecovered)}</p>
-          <p className="text-sm text-gray-500 uppercase tracking-wider">Recovered</p>
+          <p className="text-sm font-bold text-gray-900 mb-1 truncate">{formatCurrency(data.revenueRecovered)}</p>
+          <p className="text-xs text-gray-500 uppercase tracking-wider">Recovered</p>
         </div>
 
         <div className="rounded-lg border border-gray-200 bg-white shadow-sm p-5 relative overflow-hidden group">
           <div className="absolute inset-0 bg-gradient-to-br from-blue-50 to-transparent opacity-0 group-hover:opacity-100 transition-opacity"></div>
-          <p className="text-2xl font-bold text-gray-900 mb-1">{data.recoveryRate}%</p>
-          <p className="text-sm text-gray-500 uppercase tracking-wider">Recovery</p>
+          <p className="text-sm font-bold text-gray-900 mb-1 truncate">{data.recoveryRate}%</p>
+          <p className="text-xs text-gray-500 uppercase tracking-wider">Recovery</p>
         </div>
       </div>
 
@@ -149,20 +149,20 @@ export default function Dashboard() {
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
         <div className="rounded-lg border border-gray-200 bg-white shadow-sm p-5 relative overflow-hidden group">
           <div className="absolute inset-0 bg-gradient-to-br from-purple-50 to-transparent opacity-0 group-hover:opacity-100 transition-opacity"></div>
-          <p className="text-2xl font-bold text-gray-900 mb-1">{formatCurrency(data.netRevenueRecovered)}</p>
-          <p className="text-sm text-gray-500 uppercase tracking-wider">Net</p>
+          <p className="text-sm font-bold text-gray-900 mb-1 truncate">{formatCurrency(data.netRevenueRecovered)}</p>
+          <p className="text-xs text-gray-500 uppercase tracking-wider">Net</p>
         </div>
 
         <div className="rounded-lg border border-gray-200 bg-white shadow-sm p-5 relative overflow-hidden group">
           <div className="absolute inset-0 bg-gradient-to-br from-orange-50 to-transparent opacity-0 group-hover:opacity-100 transition-opacity"></div>
-          <p className="text-2xl font-bold text-gray-900 mb-1">{data.openEscalations}</p>
-          <p className="text-sm text-gray-500 uppercase tracking-wider">Escalated</p>
+          <p className="text-sm font-bold text-gray-900 mb-1 truncate">{data.openEscalations}</p>
+          <p className="text-xs text-gray-500 uppercase tracking-wider">Escalated</p>
         </div>
       </div>
 
       {/* Real Chart */}
       <div className="mt-8">
-        <h3 className="text-lg font-medium text-gray-800 mb-3">Revenue Recovery Chart</h3>
+        <h3 className="text-lg font-bold text-gray-900 mb-3">Revenue Recovery Chart</h3>
         <div className="rounded-lg border border-gray-200 bg-white shadow-sm p-6 h-[400px]">
           <ResponsiveContainer width="100%" height="100%">
             <LineChart data={[

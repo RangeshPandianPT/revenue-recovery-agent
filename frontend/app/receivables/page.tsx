@@ -88,7 +88,7 @@ export default function Receivables() {
   const filterOptions = ['All', 'Due Soon', 'Overdue', 'High Risk', 'Promise Pending', 'Promise Broken', 'Recovered', 'Escalated'];
 
   return (
-    <div className="space-y-8 font-mono pb-12">
+    <div className="space-y-8 pb-12">
       {/* Header */}
       <div className="flex flex-col justify-between items-start gap-2 border-b border-gray-200 pb-4">
         <h2 className="text-2xl font-bold text-gray-900 tracking-tight flex items-center gap-2">
@@ -101,36 +101,36 @@ export default function Receivables() {
       {/* Summary Cards */}
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
         <div className="rounded-lg border border-gray-200 bg-white shadow-sm p-4 relative overflow-hidden">
-          <p className="text-2xl font-bold text-gray-900 mb-1">{formatCurrency(metrics.totalOutstanding)}</p>
+          <p className="text-sm font-bold truncate text-gray-900 mb-1">{formatCurrency(metrics.totalOutstanding)}</p>
           <p className="text-xs text-gray-500 uppercase tracking-wider">Total Outstanding</p>
         </div>
         <div className="rounded-lg border border-red-200 bg-red-50 shadow-sm p-4 relative overflow-hidden">
-          <p className="text-2xl font-bold text-red-600 mb-1">{formatCurrency(metrics.overdueAmount)}</p>
+          <p className="text-sm font-bold truncate text-red-600 mb-1">{formatCurrency(metrics.overdueAmount)}</p>
           <p className="text-xs text-red-500 uppercase tracking-wider font-semibold">Overdue Amount</p>
         </div>
         <div className="rounded-lg border border-gray-200 bg-white shadow-sm p-4 relative overflow-hidden">
-          <p className="text-2xl font-bold text-gray-900 mb-1">{formatCurrency(metrics.dueThisWeek)}</p>
+          <p className="text-sm font-bold truncate text-gray-900 mb-1">{formatCurrency(metrics.dueThisWeek)}</p>
           <p className="text-xs text-gray-500 uppercase tracking-wider">Due This Week</p>
         </div>
         <div className="rounded-lg border border-orange-200 bg-orange-50 shadow-sm p-4 relative overflow-hidden">
-          <p className="text-2xl font-bold text-orange-600 mb-1">{formatCurrency(metrics.highRiskAmount)}</p>
+          <p className="text-sm font-bold truncate text-orange-600 mb-1">{formatCurrency(metrics.highRiskAmount)}</p>
           <p className="text-xs text-orange-500 uppercase tracking-wider font-semibold flex items-center gap-1"><AlertTriangle className="h-3 w-3" /> High-Risk Receivables</p>
         </div>
         
         <div className="rounded-lg border border-blue-200 bg-blue-50 shadow-sm p-4 relative overflow-hidden">
-          <p className="text-2xl font-bold text-blue-600 mb-1">{formatCurrency(metrics.expectedRecovery)}</p>
+          <p className="text-sm font-bold truncate text-blue-600 mb-1">{formatCurrency(metrics.expectedRecovery)}</p>
           <p className="text-xs text-blue-500 uppercase tracking-wider font-semibold flex items-center gap-1"><TrendingUp className="h-3 w-3" /> Expected AI Recovery</p>
         </div>
         <div className="rounded-lg border border-green-200 bg-green-50 shadow-sm p-4 relative overflow-hidden">
-          <p className="text-2xl font-bold text-green-600 mb-1">{formatCurrency(metrics.recoveredAmount)}</p>
+          <p className="text-sm font-bold truncate text-green-600 mb-1">{formatCurrency(metrics.recoveredAmount)}</p>
           <p className="text-xs text-green-600 uppercase tracking-wider font-semibold">Recovered Amount</p>
         </div>
         <div className="rounded-lg border border-gray-200 bg-white shadow-sm p-4 relative overflow-hidden">
-          <p className="text-2xl font-bold text-gray-900 mb-1">{metrics.recoveryRate.toFixed(1)}%</p>
+          <p className="text-sm font-bold truncate text-gray-900 mb-1">{metrics.recoveryRate.toFixed(1)}%</p>
           <p className="text-xs text-gray-500 uppercase tracking-wider">AI Recovery Rate</p>
         </div>
         <div className="rounded-lg border border-purple-200 bg-purple-50 shadow-sm p-4 relative overflow-hidden">
-          <p className="text-2xl font-bold text-purple-700 mb-1">{metrics.escalatedCount}</p>
+          <p className="text-sm font-bold truncate text-purple-700 mb-1">{metrics.escalatedCount}</p>
           <p className="text-xs text-purple-600 uppercase tracking-wider font-semibold">Escalated Accounts</p>
         </div>
       </div>

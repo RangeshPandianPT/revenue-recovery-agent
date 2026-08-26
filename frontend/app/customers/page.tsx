@@ -25,7 +25,7 @@ export default function Customers() {
   };
 
   return (
-    <div className="space-y-8 font-mono pb-12">
+    <div className="space-y-8 pb-12">
       {/* Header */}
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 border-b border-gray-200 pb-4">
         <div>
@@ -46,8 +46,8 @@ export default function Customers() {
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
         <div className="rounded-lg border border-gray-200 bg-white shadow-sm p-5 flex items-start justify-between">
           <div>
-            <p className="text-2xl font-bold text-gray-900 mb-1">24,592</p>
-            <p className="text-sm text-gray-500 uppercase tracking-wider">Total Customers</p>
+            <p className="text-sm font-bold truncate text-gray-900 mb-1">24,592</p>
+            <p className="text-xs text-gray-500 uppercase tracking-wider">Total Customers</p>
           </div>
           <div className="p-2 bg-blue-50 rounded-lg">
             <Users className="h-5 w-5 text-blue-600" />
@@ -56,8 +56,8 @@ export default function Customers() {
         
         <div className="rounded-lg border border-gray-200 bg-white shadow-sm p-5 flex items-start justify-between">
           <div>
-            <p className="text-2xl font-bold text-gray-900 mb-1">1,204</p>
-            <p className="text-sm text-gray-500 uppercase tracking-wider">VIP Customers</p>
+            <p className="text-sm font-bold truncate text-gray-900 mb-1">1,204</p>
+            <p className="text-xs text-gray-500 uppercase tracking-wider">VIP Customers</p>
           </div>
           <div className="p-2 bg-purple-50 rounded-lg">
             <Star className="h-5 w-5 text-purple-600" />
@@ -66,8 +66,8 @@ export default function Customers() {
 
         <div className="rounded-lg border border-gray-200 bg-white shadow-sm p-5 flex items-start justify-between">
           <div>
-            <p className="text-2xl font-bold text-gray-900 mb-1">842</p>
-            <p className="text-sm text-gray-500 uppercase tracking-wider">At-Risk</p>
+            <p className="text-sm font-bold truncate text-gray-900 mb-1">842</p>
+            <p className="text-xs text-gray-500 uppercase tracking-wider">At-Risk</p>
           </div>
           <div className="p-2 bg-red-50 rounded-lg">
             <AlertTriangle className="h-5 w-5 text-red-600" />
@@ -76,8 +76,8 @@ export default function Customers() {
 
         <div className="rounded-lg border border-gray-200 bg-white shadow-sm p-5 flex items-start justify-between">
           <div>
-            <p className="text-2xl font-bold text-gray-900 mb-1">5,420</p>
-            <p className="text-sm text-gray-500 uppercase tracking-wider">High-Intent</p>
+            <p className="text-sm font-bold truncate text-gray-900 mb-1">5,420</p>
+            <p className="text-xs text-gray-500 uppercase tracking-wider">High-Intent</p>
           </div>
           <div className="p-2 bg-green-50 rounded-lg">
             <Zap className="h-5 w-5 text-green-600" />
@@ -90,8 +90,8 @@ export default function Customers() {
         <div className="rounded-lg border border-gray-200 bg-white shadow-sm p-5 flex items-start justify-between relative overflow-hidden group">
           <div className="absolute inset-0 bg-gradient-to-br from-indigo-50 to-transparent opacity-0 group-hover:opacity-100 transition-opacity"></div>
           <div className="relative z-10">
-            <p className="text-2xl font-bold text-gray-900 mb-1">{formatCurrency(185400000)}</p>
-            <p className="text-sm text-gray-500 uppercase tracking-wider">Total Customer LTV</p>
+            <p className="text-sm font-bold truncate text-gray-900 mb-1">{formatCurrency(185400000)}</p>
+            <p className="text-xs text-gray-500 uppercase tracking-wider">Total Customer LTV</p>
           </div>
           <div className="p-2 bg-indigo-50 rounded-lg relative z-10">
             <TrendingUp className="h-5 w-5 text-indigo-600" />
@@ -101,16 +101,16 @@ export default function Customers() {
         <div className="rounded-lg border border-gray-200 bg-white shadow-sm p-5 flex items-start justify-between relative overflow-hidden group">
           <div className="absolute inset-0 bg-gradient-to-br from-red-50 to-transparent opacity-0 group-hover:opacity-100 transition-opacity"></div>
           <div className="relative z-10">
-            <p className="text-2xl font-bold text-red-600 mb-1">{formatCurrency(4820000)}</p>
-            <p className="text-sm text-gray-500 uppercase tracking-wider">Revenue At Risk</p>
+            <p className="text-sm font-bold truncate text-red-600 mb-1">{formatCurrency(4820000)}</p>
+            <p className="text-xs text-gray-500 uppercase tracking-wider">Revenue At Risk</p>
           </div>
         </div>
 
         <div className="rounded-lg border border-gray-200 bg-white shadow-sm p-5 flex items-start justify-between relative overflow-hidden group">
           <div className="absolute inset-0 bg-gradient-to-br from-green-50 to-transparent opacity-0 group-hover:opacity-100 transition-opacity"></div>
           <div className="relative z-10">
-            <p className="text-2xl font-bold text-green-600 mb-1">{formatCurrency(2914000)}</p>
-            <p className="text-sm text-gray-500 uppercase tracking-wider">Revenue Recovered</p>
+            <p className="text-sm font-bold truncate text-green-600 mb-1">{formatCurrency(2914000)}</p>
+            <p className="text-xs text-gray-500 uppercase tracking-wider">Revenue Recovered</p>
           </div>
         </div>
       </div>

@@ -30,7 +30,7 @@ export default function Transactions() {
   };
 
   return (
-    <div className="space-y-8 font-mono pb-12">
+    <div className="space-y-8 pb-12">
       <div className="flex flex-col justify-between items-start gap-4">
         <div>
           <h2 className="text-2xl font-bold text-gray-900 tracking-tight">Transaction Intelligence</h2>
@@ -41,20 +41,20 @@ export default function Transactions() {
       {/* Summary Cards */}
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
         <div className="rounded-lg border border-gray-200 bg-white shadow-sm p-5">
-          <p className="text-2xl font-bold text-gray-900 mb-1">12,492</p>
-          <p className="text-sm text-gray-500 uppercase tracking-wider">Total Failed (30d)</p>
+          <p className="text-sm font-bold truncate text-gray-900 mb-1">12,492</p>
+          <p className="text-xs text-gray-500 uppercase tracking-wider">Total Failed (30d)</p>
         </div>
         <div className="rounded-lg border border-gray-200 bg-white shadow-sm p-5">
-          <p className="text-2xl font-bold text-red-600 mb-1">{formatCurrency(4820000)}</p>
-          <p className="text-sm text-gray-500 uppercase tracking-wider">Revenue at Risk</p>
+          <p className="text-sm font-bold truncate text-red-600 mb-1">{formatCurrency(4820000)}</p>
+          <p className="text-xs text-gray-500 uppercase tracking-wider">Revenue at Risk</p>
         </div>
         <div className="rounded-lg border border-gray-200 bg-white shadow-sm p-5">
-          <p className="text-2xl font-bold text-green-600 mb-1">{formatCurrency(2914000)}</p>
-          <p className="text-sm text-gray-500 uppercase tracking-wider">Recovered Revenue</p>
+          <p className="text-sm font-bold truncate text-green-600 mb-1">{formatCurrency(2914000)}</p>
+          <p className="text-xs text-gray-500 uppercase tracking-wider">Recovered Revenue</p>
         </div>
         <div className="rounded-lg border border-gray-200 bg-white shadow-sm p-5">
-          <p className="text-2xl font-bold text-blue-600 mb-1">60.4%</p>
-          <p className="text-sm text-gray-500 uppercase tracking-wider">AI Recovery Rate</p>
+          <p className="text-sm font-bold truncate text-blue-600 mb-1">60.4%</p>
+          <p className="text-xs text-gray-500 uppercase tracking-wider">AI Recovery Rate</p>
         </div>
       </div>
 
@@ -84,15 +84,15 @@ export default function Transactions() {
             <div className="space-y-4">
               <div>
                 <p className="text-xs text-gray-500">Recovery Rate</p>
-                <p className="text-lg font-bold text-gray-900">0%</p>
+                <p className="text-sm font-bold text-gray-900">0%</p>
               </div>
               <div>
                 <p className="text-xs text-gray-500">Recovered Revenue</p>
-                <p className="text-lg font-bold text-gray-900">₹0</p>
+                <p className="text-sm font-bold text-gray-900">₹0</p>
               </div>
               <div>
                 <p className="text-xs text-gray-500">Cost of Recovery</p>
-                <p className="text-lg font-bold text-gray-900">₹0</p>
+                <p className="text-sm font-bold text-gray-900">₹0</p>
               </div>
             </div>
           </div>
@@ -102,15 +102,15 @@ export default function Transactions() {
             <div className="space-y-4">
               <div>
                 <p className="text-xs text-gray-500">Recovery Rate</p>
-                <p className="text-lg font-bold text-blue-600">18.5%</p>
+                <p className="text-sm font-bold text-blue-600">18.5%</p>
               </div>
               <div>
                 <p className="text-xs text-gray-500">Recovered Revenue</p>
-                <p className="text-lg font-bold text-gray-900">{formatCurrency(891700)}</p>
+                <p className="text-sm font-bold text-gray-900">{formatCurrency(891700)}</p>
               </div>
               <div>
                 <p className="text-xs text-gray-500">Cost of Recovery (SMS/Email)</p>
-                <p className="text-lg font-bold text-red-500">{formatCurrency(45000)}</p>
+                <p className="text-sm font-bold text-red-500">{formatCurrency(45000)}</p>
               </div>
             </div>
           </div>
@@ -123,15 +123,15 @@ export default function Transactions() {
             <div className="space-y-4">
               <div>
                 <p className="text-xs text-purple-600">Recovery Rate</p>
-                <p className="text-lg font-bold text-green-600">60.4%</p>
+                <p className="text-sm font-bold text-green-600">60.4%</p>
               </div>
               <div>
                 <p className="text-xs text-purple-600">Recovered Revenue</p>
-                <p className="text-lg font-bold text-gray-900">{formatCurrency(2914000)}</p>
+                <p className="text-sm font-bold text-gray-900">{formatCurrency(2914000)}</p>
               </div>
               <div>
                 <p className="text-xs text-purple-600">Cost of Recovery (Smart)</p>
-                <p className="text-lg font-bold text-gray-900">{formatCurrency(128000)}</p>
+                <p className="text-sm font-bold text-gray-900">{formatCurrency(128000)}</p>
               </div>
             </div>
           </div>
