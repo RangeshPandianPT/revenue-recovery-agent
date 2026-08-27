@@ -1,5 +1,7 @@
 from abc import ABC, abstractmethod
 from typing import Dict, Any, Optional
+import httpx
+import json
 
 class LLMProvider(ABC):
     @abstractmethod
@@ -16,12 +18,162 @@ class OllamaProvider(LLMProvider):
         self.model = model
 
     async def analyze_risk(self, context: Dict[str, Any]) -> Dict[str, Any]:
-        # TODO: Implement actual Ollama API call
-        return {"status": "mock_ollama_risk", "probability": 0.85}
+        prompt = f"""
+        Analyze the risk of the following failed transaction/invoice and output ONLY a JSON object.
+        Context: {json.dumps(context)}
+        
+        Required JSON structure:
+        {{
+            "root_cause": "string explaining the cause",
+            "recovery_probability": float between 0 and 1,
+            "confidence": float between 0 and 1
+        }}
+        """
+        try:
+            async with httpx.AsyncClient() as client:
+                response = await client.post(
+                    f"{self.base_url}/api/generate",
+                    json={
+                        "model": self.model,
+                        "prompt": prompt,
+                        "stream": False,
+                        "format": "json"
+                    },
+                    timeout=30.0
+                )
+                response.raise_for_status()
+                data = response.json()
+                return json.loads(data.get("response", "{}"))
+        except Exception as e:
+            print(f"Ollama analyze_risk error: {e}")
+            return {
+                "root_cause": "UNKNOWN_ERROR",
+                "recovery_probability": 0.5,
+                "confidence": 0.5
+            }
 
     async def select_strategy(self, case_id: str, context: Dict[str, Any]) -> Dict[str, Any]:
-        # TODO: Implement actual Ollama API call
-        return {"strategy": "SMART_RETRY"}
+        prompt = f"""
+        Select the best recovery strategy for this case and output ONLY a JSON object.
+        Case ID: {case_id}
+        Context: {json.dumps(context)}
+        
+        Available strategies: SMART_RETRY, PAYMENT_LINK, EMAIL_REMINDER, WHATSAPP_REMINDER, CALL_AGENT, LEGAL_ESCALATION
+        
+        Required JSON structure:
+        {{
+            "recommended_strategy": "string (one of the available strategies)",
+            "expected_recovery": float (expected amount to recover),
+            "reason": "string explaining the reason"
+        }}
+        """
+        try:
+            async with httpx.AsyncClient() as client:
+                response = await client.post(
+                    f"{self.base_url}/api/generate",
+                    json={
+                        "model": self.model,
+                        "prompt": prompt,
+                        "stream": False,
+                        "format": "json"
+                    },
+                    timeout=30.0
+                )
+                response.raise_for_status()
+                data = response.json()
+                return json.loads(data.get("response", "{}"))
+        except Exception as e:
+            print(f"Ollama select_strategy error: {e}")
+            return {
+                "recommended_strategy": "SMART_RETRY",
+                "expected_recovery": context.get("amount", 0.0),
+                "reason": "Fallback strategy due to AI provider error."
+            }
+
+class OpenRouterProvider(LLMProvider):
+    def __init__(self, api_key: str, model: str = "openrouter/free"):
+        self.api_key = api_key
+        self.model = model
+        self.base_url = "https://openrouter.ai/api/v1/chat/completions"
+
+    async def analyze_risk(self, context: Dict[str, Any]) -> Dict[str, Any]:
+        prompt = f"""
+        Analyze the risk of the following failed transaction/invoice and output ONLY a JSON object.
+        Context: {json.dumps(context)}
+        
+        Required JSON structure:
+        {{
+            "root_cause": "string explaining the cause",
+            "recovery_probability": float between 0 and 1,
+            "confidence": float between 0 and 1
+        }}
+        """
+        try:
+            async with httpx.AsyncClient() as client:
+                response = await client.post(
+                    self.base_url,
+                    headers={
+                        "Authorization": f"Bearer {self.api_key}",
+                    },
+                    json={
+                        "model": self.model,
+                        "messages": [{"role": "user", "content": prompt}]
+                    },
+                    timeout=30.0
+                )
+                response.raise_for_status()
+                data = response.json()
+                content = data["choices"][0]["message"]["content"]
+                content = content.replace("```json", "").replace("```", "").strip()
+                return json.loads(content)
+        except Exception as e:
+            print(f"OpenRouter analyze_risk error: {e}")
+            return {
+                "root_cause": "UNKNOWN_ERROR",
+                "recovery_probability": 0.5,
+                "confidence": 0.5
+            }
+
+    async def select_strategy(self, case_id: str, context: Dict[str, Any]) -> Dict[str, Any]:
+        prompt = f"""
+        Select the best recovery strategy for this case and output ONLY a JSON object.
+        Case ID: {case_id}
+        Context: {json.dumps(context)}
+        
+        Available strategies: SMART_RETRY, PAYMENT_LINK, EMAIL_REMINDER, WHATSAPP_REMINDER, CALL_AGENT, LEGAL_ESCALATION
+        
+        Required JSON structure:
+        {{
+            "recommended_strategy": "string (one of the available strategies)",
+            "expected_recovery": float (expected amount to recover),
+            "reason": "string explaining the reason"
+        }}
+        """
+        try:
+            async with httpx.AsyncClient() as client:
+                response = await client.post(
+                    self.base_url,
+                    headers={
+                        "Authorization": f"Bearer {self.api_key}",
+                    },
+                    json={
+                        "model": self.model,
+                        "messages": [{"role": "user", "content": prompt}]
+                    },
+                    timeout=30.0
+                )
+                response.raise_for_status()
+                data = response.json()
+                content = data["choices"][0]["message"]["content"]
+                content = content.replace("```json", "").replace("```", "").strip()
+                return json.loads(content)
+        except Exception as e:
+            print(f"OpenRouter select_strategy error: {e}")
+            return {
+                "recommended_strategy": "SMART_RETRY",
+                "expected_recovery": context.get("amount", 0.0),
+                "reason": "Fallback strategy due to AI provider error."
+            }
 
 class GeminiProvider(LLMProvider):
     def __init__(self, api_key: str):
@@ -58,5 +210,10 @@ def get_llm_provider(provider_type: str = "mock", **kwargs) -> LLMProvider:
         )
     elif provider_type == "gemini":
         return GeminiProvider(api_key=kwargs.get("api_key", ""))
+    elif provider_type == "openrouter":
+        return OpenRouterProvider(
+            api_key=kwargs.get("api_key", ""),
+            model=kwargs.get("model", "openrouter/free")
+        )
     else:
         return MockProvider()

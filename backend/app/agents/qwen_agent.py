@@ -3,6 +3,7 @@ import json
 from typing import Dict, Any, Optional
 from pydantic import BaseModel
 from app.models.domain import StrategyType
+from app.core.config import settings
 
 class AgentDecision(BaseModel):
     case_id: str
@@ -18,41 +19,99 @@ class AgentDecision(BaseModel):
     requires_human_review: bool
     reason: str
 
-class QwenAgent:
-    def __init__(self, base_url: str = "http://localhost:11434", model: str = "qwen2.5:8b"):
-        self.base_url = base_url
-        self.model = model
+class OpenRouterAgent:
+    def __init__(self):
+        self.api_key = settings.OPENROUTER_API_KEY
+        self.model = settings.OPENROUTER_MODEL
+        self.base_url = "https://openrouter.ai/api/v1/chat/completions"
         
     async def analyze_and_decide(self, context: Dict[str, Any]) -> AgentDecision:
         prompt = self._build_prompt(context)
         
         payload = {
             "model": self.model,
-            "prompt": prompt,
-            "stream": False,
-            "format": "json"
+            "messages": [
+                {
+                    "role": "system",
+                    "content": "You are RecoverAI, an autonomous revenue recovery agent. Return ONLY valid JSON."
+                },
+                {
+                    "role": "user",
+                    "content": prompt
+                }
+            ],
+            "response_format": { "type": "json_object" }
+        }
+        
+        headers = {
+            "Authorization": f"Bearer {self.api_key}",
+            "HTTP-Referer": "http://localhost:3000",
+            "X-Title": "RecoverAI",
+            "Content-Type": "application/json"
         }
         
         try:
             async with httpx.AsyncClient() as client:
-                response = await client.post(f"{self.base_url}/api/generate", json=payload, timeout=30.0)
+                response = await client.post(self.base_url, headers=headers, json=payload, timeout=30.0)
                 response.raise_for_status()
                 data = response.json()
                 
                 try:
-                    result_json = json.loads(data.get("response", "{}"))
+                    content = data["choices"][0]["message"]["content"]
+                    result_json = json.loads(content)
                     return AgentDecision(**result_json)
                 except Exception as parse_err:
-                    return self._fallback_decision(context, f"JSON parse error: {str(parse_err)}")
+                    return self._fallback_decision(context, f"JSON parse error: {str(parse_err)}\nContent: {content}")
                     
         except Exception as e:
             return self._fallback_decision(context, f"LLM connection error: {str(e)}")
+
+    def analyze_and_decide_sync(self, context: Dict[str, Any]) -> AgentDecision:
+        prompt = self._build_prompt(context)
+        
+        payload = {
+            "model": self.model,
+            "messages": [
+                {
+                    "role": "system",
+                    "content": "You are RecoverAI, an autonomous revenue recovery agent. Return ONLY valid JSON."
+                },
+                {
+                    "role": "user",
+                    "content": prompt
+                }
+            ],
+            "response_format": { "type": "json_object" }
+        }
+        
+        headers = {
+            "Authorization": f"Bearer {self.api_key}",
+            "HTTP-Referer": "http://localhost:3000",
+            "X-Title": "RecoverAI",
+            "Content-Type": "application/json"
+        }
+        
+        try:
+            with httpx.Client() as client:
+                response = client.post(self.base_url, headers=headers, json=payload, timeout=30.0)
+                response.raise_for_status()
+                data = response.json()
+                
+                try:
+                    content = data["choices"][0]["message"]["content"]
+                    result_json = json.loads(content)
+                    return AgentDecision(**result_json)
+                except Exception as parse_err:
+                    return self._fallback_decision(context, f"JSON parse error: {str(parse_err)}\nContent: {content}")
+                    
+        except Exception as e:
+            return self._fallback_decision(context, f"LLM connection error: {str(e)}")
+
             
     def _build_prompt(self, context: Dict[str, Any]) -> str:
         return f"""
-        You are RecoverAI, an autonomous revenue recovery agent.
         Analyze the following context and decide the best recovery strategy.
-        Return ONLY valid JSON matching this schema:
+        Return ONLY valid JSON matching exactly this schema:
         {{
             "case_id": "string",
             "event_type": "string",
