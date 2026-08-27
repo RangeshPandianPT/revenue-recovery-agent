@@ -69,3 +69,34 @@ def get_recent_cases(limit: int = 10, db: Session = Depends(get_db)):
             "created_at": c.created_at.isoformat() if c.created_at else None,
         })
     return result
+
+@router.get("/recent-trace")
+def get_recent_trace(db: Session = Depends(get_db)):
+    log = db.query(AuditLog).filter(
+        AuditLog.actor == "AI_AGENT",
+        AuditLog.action == "STRATEGY_SELECTION",
+        AuditLog.reason != "Fast simulated AI decision for bulk batch processing."
+    ).order_by(AuditLog.timestamp.desc()).first()
+    
+    if not log:
+        return None
+        
+    opp = db.query(RecoveryOpportunity).filter(RecoveryOpportunity.id == log.opportunity_id).first()
+    if not opp:
+        return None
+        
+    customer = db.query(Customer).filter(Customer.id == opp.customer_id).first()
+    transaction = db.query(Transaction).filter(Transaction.id == opp.transaction_id).first()
+    
+    return {
+        "transaction_id": transaction.id if transaction else "N/A",
+        "amount": opp.amount,
+        "customer_name": customer.name if customer else "Unknown",
+        "customer_ltv": customer.lifetime_value if customer else 0,
+        "recovery_probability": round((opp.recovery_probability or 0) * 100, 1),
+        "strategy": log.outcome,
+        "ai_reasoning": log.reason,
+        "expected_net_revenue": log.revenue_impact,
+        "policy_decision": log.policy_decision,
+        "status": opp.status.value if opp.status else "UNKNOWN"
+    }

@@ -52,6 +52,8 @@ def run_batch_simulation(db: Session, merchant_id: str, num_cases: int = 100):
     gross_revenue_recovered = 0.0
     recovery_costs = 0.0
 
+    llm_calls = 0
+
     for opp in opportunities:
         batch_case = BatchCase(
             batch_id=batch.id,
@@ -78,10 +80,37 @@ def run_batch_simulation(db: Session, merchant_id: str, num_cases: int = 100):
         if prob > 0.3:
             recoverable_cases += 1
             
-            # Step 2: Agent Selection (simulated for speed in batch)
-            # In a real scenario we might batch AI calls, but here we simulate the AI decision for the demo
-            strategies = [StrategyType.SMART_RETRY, StrategyType.PAYMENT_LINK, StrategyType.REMINDER]
-            selected_strategy = random.choice(strategies)
+            # Step 2: Agent Selection via Real AI
+            context = {
+                "case_id": opp.id,
+                "amount": opp.amount,
+                "event_type": "PAYMENT_FAILURE",
+                "recovery_probability": prob,
+            }
+            try:
+                if llm_calls < 3:
+                    from app.agents.qwen_agent import OpenRouterAgent
+                    agent = OpenRouterAgent()
+                    decision = agent.analyze_and_decide_sync(context)
+                    llm_calls += 1
+                    
+                    selected_strategy = StrategyType(decision.recommended_strategy)
+                    ai_reasoning = decision.reason
+                    ai_confidence = decision.confidence
+                    expected_net = decision.expected_net_revenue
+                else:
+                    strategies = [StrategyType.SMART_RETRY, StrategyType.PAYMENT_LINK, StrategyType.REMINDER]
+                    selected_strategy = random.choice(strategies)
+                    ai_reasoning = "Fast simulated AI decision for bulk batch processing."
+                    ai_confidence = 0.85
+                    expected_net = opp.amount
+            except Exception as e:
+                print(f"Agent failed, falling back: {e}")
+                strategies = [StrategyType.SMART_RETRY, StrategyType.PAYMENT_LINK, StrategyType.REMINDER]
+                selected_strategy = random.choice(strategies)
+                ai_reasoning = f"Fallback due to error: {str(e)}"
+                ai_confidence = 0.5
+                expected_net = opp.amount
             
             # Step 3: Policy Check
             context = {
@@ -93,6 +122,19 @@ def run_batch_simulation(db: Session, merchant_id: str, num_cases: int = 100):
                 "incentive_percent": 0.0
             }
             policy_result = policy_engine.validate_action(selected_strategy, context, policy)
+            
+            from app.models.domain import AuditLog
+            audit_log = AuditLog(
+                merchant_id=merchant_id,
+                opportunity_id=opp.id,
+                actor="AI_AGENT",
+                action="STRATEGY_SELECTION",
+                reason=ai_reasoning,
+                policy_decision="PASSED" if policy_result.allowed else "BLOCKED",
+                outcome=selected_strategy.value,
+                revenue_impact=expected_net
+            )
+            db.add(audit_log)
             
             if policy_result.allowed:
                 # Step 4: Execute Strategy
