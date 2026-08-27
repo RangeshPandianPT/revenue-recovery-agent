@@ -1,20 +1,18 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Search, Filter, ArrowUpRight, ArrowDownRight, Activity, Zap, Shield, Play } from 'lucide-react';
 import Link from 'next/link';
 
-const mockTransactions = [
-  { id: 'TXN-98231', customer: 'Acme Corp', orderId: 'ORD-1092', amount: 27500, status: 'RECOVERED', probability: 87, action: 'Smart Retry', method: 'UPI' },
-  { id: 'TXN-98230', customer: 'Beta Ltd', orderId: 'ORD-1091', amount: 15400, status: 'PENDING', probability: 45, action: 'Payment Link', method: 'Card' },
-  { id: 'TXN-98229', customer: 'Charlie Inc', orderId: 'ORD-1090', amount: 8900, status: 'FAILED', probability: 12, action: 'Escalate', method: 'Netbanking' },
-  { id: 'TXN-98228', customer: 'Delta Co', orderId: 'ORD-1089', amount: 125000, status: 'RECOVERED', probability: 92, action: 'Incentive (5%)', method: 'Card' },
-  { id: 'TXN-98227', customer: 'Echo LLC', orderId: 'ORD-1088', amount: 3400, status: 'RECOVERED', probability: 78, action: 'Reminder', method: 'UPI' },
-];
-
 export default function Transactions() {
+  const [transactions, setTransactions] = useState<any[]>([]);
   const [searchTerm, setSearchTerm] = useState('');
   const [isSimulating, setIsSimulating] = useState(false);
+  const [simStats, setSimStats] = useState({
+    rate: 60.4,
+    revenue: 2914000,
+    cost: 128000
+  });
 
   const formatCurrency = (val: number) => {
     return new Intl.NumberFormat('en-IN', {
@@ -24,9 +22,47 @@ export default function Transactions() {
     }).format(val);
   };
 
-  const simulateRecovery = () => {
+  const fetchTransactions = async () => {
+    try {
+      const res = await fetch('http://localhost:8000/api/dashboard/recent-cases?limit=20');
+      if (res.ok) {
+        const data = await res.json();
+        setTransactions(data);
+      }
+    } catch (e: any) {
+      console.error('Failed to fetch cases', e.message);
+    }
+  };
+
+  useEffect(() => {
+    fetchTransactions();
+  }, []);
+
+  const simulateRecovery = async () => {
     setIsSimulating(true);
-    setTimeout(() => setIsSimulating(false), 2000);
+    try {
+      const res = await fetch('http://localhost:8000/api/batches/run', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ merchant_id: 'demo_merchant', case_count: 100 })
+      });
+      if (!res.ok) {
+        const errorData = await res.json().catch(() => ({}));
+        throw new Error(errorData.detail || 'Simulation failed');
+      }
+      const data = await res.json();
+      const rate = (data.successful_recoveries / Math.max(data.total_cases, 1)) * 100;
+      setSimStats({
+        rate: parseFloat(rate.toFixed(1)),
+        revenue: data.net_revenue_recovered || 0,
+        cost: data.recovery_costs || 0
+      });
+    } catch (error: any) {
+      console.error('Simulation error:', error.message);
+    } finally {
+      setIsSimulating(false);
+      fetchTransactions();
+    }
   };
 
   return (
@@ -123,15 +159,15 @@ export default function Transactions() {
             <div className="space-y-4">
               <div>
                 <p className="text-xs text-purple-600">Recovery Rate</p>
-                <p className="text-sm font-bold text-green-600">60.4%</p>
+                <p className="text-sm font-bold text-green-600">{simStats.rate}%</p>
               </div>
               <div>
                 <p className="text-xs text-purple-600">Recovered Revenue</p>
-                <p className="text-sm font-bold text-gray-900">{formatCurrency(2914000)}</p>
+                <p className="text-sm font-bold text-gray-900">{formatCurrency(simStats.revenue)}</p>
               </div>
               <div>
                 <p className="text-xs text-purple-600">Cost of Recovery (Smart)</p>
-                <p className="text-sm font-bold text-gray-900">{formatCurrency(128000)}</p>
+                <p className="text-sm font-bold text-gray-900">{formatCurrency(simStats.cost)}</p>
               </div>
             </div>
           </div>
@@ -173,23 +209,23 @@ export default function Transactions() {
               </tr>
             </thead>
             <tbody className="bg-white divide-y divide-gray-200">
-              {mockTransactions.map((txn) => (
+              {transactions.map((txn: any) => (
                 <tr key={txn.id} className="hover:bg-gray-50 transition-colors">
-                  <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">{txn.id}</td>
+                  <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">{txn.id.substring(0, 12)}...</td>
                   <td className="px-6 py-4 whitespace-nowrap">
-                    <div className="text-sm text-gray-900 font-medium">{txn.customer}</div>
-                    <div className="text-xs text-gray-500">{txn.orderId}</div>
+                    <div className="text-sm text-gray-900 font-medium">{txn.customer_name}</div>
+                    <div className="text-xs text-gray-500">{txn.type}</div>
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 font-medium">{formatCurrency(txn.amount)}</td>
                   <td className="px-6 py-4 whitespace-nowrap">
                     <div className="flex items-center gap-2">
                       <div className="w-full bg-gray-200 rounded-full h-1.5 max-w-[60px]">
-                        <div className={`h-1.5 rounded-full ${txn.probability > 70 ? 'bg-green-500' : txn.probability > 30 ? 'bg-yellow-500' : 'bg-red-500'}`} style={{ width: `${txn.probability}%` }}></div>
+                        <div className={`h-1.5 rounded-full ${txn.recovery_probability * 100 > 70 ? 'bg-green-500' : txn.recovery_probability * 100 > 30 ? 'bg-yellow-500' : 'bg-red-500'}`} style={{ width: `${txn.recovery_probability * 100}%` }}></div>
                       </div>
-                      <span className="text-sm text-gray-600">{txn.probability}%</span>
+                      <span className="text-sm text-gray-600">{Math.round(txn.recovery_probability * 100)}%</span>
                     </div>
                   </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-600">{txn.action}</td>
+                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-600">{txn.recommended_action || 'N/A'}</td>
                   <td className="px-6 py-4 whitespace-nowrap">
                     <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
                       txn.status === 'RECOVERED' ? 'bg-green-100 text-green-800' : 
