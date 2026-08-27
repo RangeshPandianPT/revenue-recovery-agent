@@ -18,8 +18,8 @@ export default function Analytics() {
         }
         const apiData = await response.json();
         setData(apiData);
-      } catch (error) {
-        console.error('Error fetching analytics:', error);
+      } catch (error: any) {
+        console.error('Error fetching analytics:', error.message);
       } finally {
         setLoading(false);
       }
