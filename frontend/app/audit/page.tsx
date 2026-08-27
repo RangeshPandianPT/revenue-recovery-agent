@@ -17,8 +17,8 @@ export default function AuditTrail() {
         }
         const data = await response.json();
         setLogs(data.items || []);
-      } catch (error) {
-        console.error('Error fetching audit logs:', error);
+      } catch (error: any) {
+        console.error('Error fetching audit logs:', error.message);
       } finally {
         setLoading(false);
       }
