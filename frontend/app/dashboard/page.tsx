@@ -10,6 +10,7 @@ import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContai
 export default function Dashboard() {
   const [loading, setLoading] = useState(true);
   const [data, setData] = useState<any>(null);
+  const [traceData, setTraceData] = useState<any>(null);
 
   const [isBatchRunning, setIsBatchRunning] = useState(false);
 
@@ -30,8 +31,14 @@ export default function Dashboard() {
         openEscalations: apiData.open_escalations || 0,
         byEventType: apiData.by_event_type || {}
       });
-    } catch (error) {
-      console.error('Error fetching dashboard summary:', error);
+
+      const traceResponse = await fetch('http://localhost:8000/api/dashboard/recent-trace');
+      if (traceResponse.ok) {
+        const trace = await traceResponse.json();
+        setTraceData(trace);
+      }
+    } catch (error: any) {
+      console.error('Error fetching dashboard summary:', error.message);
     } finally {
       setLoading(false);
     }
@@ -49,12 +56,15 @@ export default function Dashboard() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ merchant_id: 'demo_merchant', case_count: 100 }),
       });
-      if (!response.ok) throw new Error('Batch execution failed');
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({}));
+        throw new Error(errorData.detail || 'Batch execution failed');
+      }
       await fetchDashboardData();
       toast.success('Batch executed successfully!');
-    } catch (error) {
-      console.error(error);
-      toast.error('Failed to execute batch run.');
+    } catch (error: any) {
+      console.error('Batch run error:', error.message);
+      toast.error(error.message || 'Failed to execute batch run.');
     } finally {
       setIsBatchRunning(false);
     }
@@ -213,13 +223,13 @@ export default function Dashboard() {
             <div className="flex justify-between items-start mb-6 pb-6 border-b border-gray-200">
               <div>
                 <p className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-1">Transaction</p>
-                <p className="text-sm font-medium text-gray-900 font-mono">TXN-78291</p>
-                <p className="text-sm text-gray-600 mt-0.5 font-mono">₹8,499</p>
+                <p className="text-sm font-medium text-gray-900 font-mono">{traceData ? traceData.transaction_id.split('-')[0] + '...' : 'TXN-78291'}</p>
+                <p className="text-sm text-gray-600 mt-0.5 font-mono">{formatCurrency(traceData ? traceData.amount : 8499)}</p>
               </div>
               <div className="text-right">
                 <p className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-1">Customer</p>
-                <p className="text-sm font-medium text-gray-900 font-mono">Customer #10492</p>
-                <p className="text-sm text-gray-600 mt-0.5 font-mono">LTV: ₹84,500</p>
+                <p className="text-sm font-medium text-gray-900 font-mono">{traceData ? traceData.customer_name : 'Customer #10492'}</p>
+                <p className="text-sm text-gray-600 mt-0.5 font-mono">LTV: {formatCurrency(traceData ? traceData.customer_ltv : 84500)}</p>
               </div>
             </div>
 
@@ -260,7 +270,7 @@ export default function Dashboard() {
                   <span className="text-green-600 text-[10px] font-bold">✓</span>
                 </div>
                 <div className="ml-4 pb-4">
-                  <p className="text-sm font-medium text-gray-800">Recovery Probability: <span className="text-green-600 font-mono">87%</span></p>
+                  <p className="text-sm font-medium text-gray-800">Recovery Probability: <span className="text-green-600 font-mono">{traceData ? traceData.recovery_probability : 87}%</span></p>
                 </div>
               </div>
               
@@ -269,7 +279,7 @@ export default function Dashboard() {
                   <span className="text-green-600 text-[10px] font-bold">✓</span>
                 </div>
                 <div className="ml-4 pb-4">
-                  <p className="text-sm font-medium text-gray-800">Strategy Selected: <span className="text-blue-600 font-bold uppercase text-xs tracking-wider">Smart Retry</span></p>
+                  <p className="text-sm font-medium text-gray-800">Strategy Selected: <span className="text-blue-600 font-bold uppercase text-xs tracking-wider">{traceData ? traceData.strategy : 'Smart Retry'}</span></p>
                 </div>
               </div>
               
@@ -278,7 +288,7 @@ export default function Dashboard() {
                   <span className="text-green-600 text-[10px] font-bold">✓</span>
                 </div>
                 <div className="ml-4 pb-4">
-                  <p className="text-sm font-medium text-gray-800">Policy Validation: <span className="text-green-600 font-semibold">PASSED</span></p>
+                  <p className="text-sm font-medium text-gray-800">Policy Validation: <span className="text-green-600 font-semibold">{traceData ? traceData.policy_decision : 'PASSED'}</span></p>
                 </div>
               </div>
               
@@ -287,7 +297,8 @@ export default function Dashboard() {
                   <span className="text-blue-600 text-[12px] font-bold">→</span>
                 </div>
                 <div className="ml-4 pb-4">
-                  <p className="text-sm font-medium text-gray-800">Executing Recovery</p>
+                  <p className="text-sm font-medium text-gray-800">AI Reasoning</p>
+                  <p className="text-sm text-gray-600 mt-1 italic leading-relaxed">{traceData ? traceData.ai_reasoning : 'Executing recovery...'}</p>
                 </div>
               </div>
               
@@ -296,7 +307,7 @@ export default function Dashboard() {
                   <span className="text-green-600 text-[10px] font-bold">✓</span>
                 </div>
                 <div className="ml-4">
-                  <p className="text-sm font-medium text-gray-800">Payment Recovered</p>
+                  <p className="text-sm font-medium text-gray-800">Execution Status: <span className="text-gray-900 font-semibold">{traceData ? traceData.status : 'Recovered'}</span></p>
                 </div>
               </div>
             </div>
@@ -309,27 +320,23 @@ export default function Dashboard() {
               <dl className="space-y-4">
                 <div className="flex justify-between">
                   <dt className="text-sm text-gray-600">Amount Recovered</dt>
-                  <dd className="text-sm font-semibold text-gray-900 font-mono">₹8,499</dd>
+                  <dd className="text-sm font-semibold text-gray-900 font-mono">{formatCurrency(traceData?.status === 'RECOVERED' ? traceData.amount : 0)}</dd>
                 </div>
                 <div className="flex justify-between">
                   <dt className="text-sm text-gray-600">Recovery Probability</dt>
-                  <dd className="text-sm font-semibold text-gray-900 font-mono">87%</dd>
+                  <dd className="text-sm font-semibold text-gray-900 font-mono">{traceData ? traceData.recovery_probability : 87}%</dd>
                 </div>
                 <div className="flex justify-between">
                   <dt className="text-sm text-gray-600">Strategy</dt>
-                  <dd className="text-sm font-medium text-gray-900">Smart Retry</dd>
-                </div>
-                <div className="flex justify-between">
-                  <dt className="text-sm text-gray-600">AI Confidence</dt>
-                  <dd className="text-sm font-semibold text-gray-900 font-mono">91%</dd>
+                  <dd className="text-sm font-medium text-gray-900">{traceData ? traceData.strategy : 'Smart Retry'}</dd>
                 </div>
                 <div className="flex justify-between">
                   <dt className="text-sm text-gray-600">Expected Net Revenue</dt>
-                  <dd className="text-sm font-semibold text-gray-900 font-mono">₹7,394</dd>
+                  <dd className="text-sm font-semibold text-gray-900 font-mono">{formatCurrency(traceData ? traceData.expected_net_revenue : 7394)}</dd>
                 </div>
                 <div className="flex justify-between pt-4 border-t border-gray-100">
                   <dt className="text-sm font-medium text-gray-900">Actual Revenue</dt>
-                  <dd className="text-sm font-bold text-green-600 font-mono">₹8,499</dd>
+                  <dd className="text-sm font-bold text-green-600 font-mono">{formatCurrency(traceData?.status === 'RECOVERED' ? traceData.amount : 0)}</dd>
                 </div>
               </dl>
             </div>
@@ -338,12 +345,14 @@ export default function Dashboard() {
               <div className="flex justify-between items-center mb-3">
                 <span className="text-sm text-gray-600">Workflow Status</span>
                 <span className="inline-flex items-center rounded-md bg-gray-100 px-2.5 py-1 text-xs font-medium text-gray-600 border border-gray-200">
-                  STOPPED
+                  {traceData ? traceData.status : 'STOPPED'}
                 </span>
               </div>
               <div className="flex justify-between items-center">
-                <span className="text-sm text-gray-600">Stop Reason</span>
-                <span className="text-sm font-medium text-gray-900 bg-green-50 text-green-700 px-2 py-0.5 rounded">Payment Successful</span>
+                <span className="text-sm text-gray-600">Policy Decision</span>
+                <span className={`text-sm font-medium px-2 py-0.5 rounded ${traceData?.policy_decision === 'PASSED' ? 'bg-green-50 text-green-700' : 'bg-red-50 text-red-700'}`}>
+                  {traceData ? traceData.policy_decision : 'PASSED'}
+                </span>
               </div>
             </div>
           </div>
