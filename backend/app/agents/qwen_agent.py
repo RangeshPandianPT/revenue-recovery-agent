@@ -21,9 +21,9 @@ class AgentDecision(BaseModel):
 
 class OpenRouterAgent:
     def __init__(self):
-        self.api_key = settings.OPENROUTER_API_KEY
-        self.model = settings.OPENROUTER_MODEL
-        self.base_url = "https://openrouter.ai/api/v1/chat/completions"
+        self.api_key = settings.GEMINI_API_KEY
+        self.model = settings.GEMINI_MODEL
+        self.base_url = "https://generativelanguage.googleapis.com/v1beta/openai/chat/completions"
         
     async def analyze_and_decide(self, context: Dict[str, Any]) -> AgentDecision:
         prompt = self._build_prompt(context)

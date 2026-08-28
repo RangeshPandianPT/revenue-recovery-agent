@@ -10,8 +10,8 @@ class Settings(BaseSettings):
     # AI Providers
     OLLAMA_BASE_URL: str = "http://localhost:11434"
     OLLAMA_MODEL: str = "qwen3:8b"
-    OPENROUTER_API_KEY: str = ""
-    OPENROUTER_MODEL: str = "openrouter/free"
+    GEMINI_API_KEY: str = ""
+    GEMINI_MODEL: str = "gemini-3.6-flash"
     
     # Razorpay
     RAZORPAY_KEY_ID: str = ""
