@@ -2,6 +2,7 @@
 
 import { useState, useMemo } from 'react';
 import { Search, Filter, CalendarCheck, CalendarX, TrendingUp, ShieldAlert, Clock, AlertTriangle, FileText, BadgeCheck } from 'lucide-react';
+import { toast } from 'react-hot-toast';
 
 type PromiseToPay = {
   id: string;
@@ -29,10 +30,30 @@ const mockPromises: PromiseToPay[] = [
 export default function Promises() {
   const [activeFilter, setActiveFilter] = useState('All');
   const [searchTerm, setSearchTerm] = useState('');
+  const [promises, setPromises] = useState<PromiseToPay[]>(mockPromises);
+
+  const handleAction = (id: string, action: 'KEPT' | 'BROKEN') => {
+    setPromises(prev => prev.map(ptp => {
+      if (ptp.id === id) {
+        return {
+          ...ptp,
+          status: action,
+          daysRemaining: action === 'KEPT' ? 0 : ptp.daysRemaining
+        };
+      }
+      return ptp;
+    }));
+    
+    if (action === 'KEPT') {
+      toast.success(`Payment logged as Kept for Promise ${id}`);
+    } else {
+      toast.error(`Promise ${id} marked as Broken`);
+    }
+  };
 
   // 1. Calculate Metrics Dynamically
   const metrics = useMemo(() => {
-    let totalPromises = mockPromises.length;
+    let totalPromises = promises.length;
     let pendingCount = 0;
     let dueTodayCount = 0;
     let dueSoonCount = 0;
@@ -41,7 +62,7 @@ export default function Promises() {
     let amountPromised = 0;
     let amountRecovered = 0;
 
-    mockPromises.forEach(ptp => {
+    promises.forEach(ptp => {
       if (ptp.status !== 'CANCELLED') {
         amountPromised += ptp.amount;
       }
@@ -64,7 +85,7 @@ export default function Promises() {
     const recoveryRate = resolvedCount > 0 ? (keptCount / resolvedCount) * 100 : 0;
 
     return { totalPromises, pendingCount, dueTodayCount, dueSoonCount, keptCount, brokenCount, amountPromised, amountRecovered, recoveryRate };
-  }, []);
+  }, [promises]);
 
   const formatCurrency = (val: number) => {
     return new Intl.NumberFormat('en-IN', { style: 'currency', currency: 'INR', maximumFractionDigits: 0 }).format(val);
@@ -72,7 +93,7 @@ export default function Promises() {
 
   // 2. Filter Logic
   const filteredPromises = useMemo(() => {
-    return mockPromises.filter(ptp => {
+    return promises.filter(ptp => {
       // Search match (Customer, Company, Invoice ID, Promise ID)
       const searchStr = `${ptp.customer} ${ptp.id} ${ptp.invoiceId}`.toLowerCase();
       const searchMatch = searchStr.includes(searchTerm.toLowerCase());
@@ -82,7 +103,7 @@ export default function Promises() {
       if (activeFilter === 'All') return true;
       return ptp.status === activeFilter;
     });
-  }, [activeFilter, searchTerm]);
+  }, [activeFilter, searchTerm, promises]);
 
   const filterOptions = ['All', 'PENDING', 'DUE_TODAY', 'DUE_SOON', 'KEPT', 'BROKEN', 'ESCALATED', 'CANCELLED'];
 
@@ -191,6 +212,7 @@ export default function Promises() {
                 <th className="px-4 py-3 text-left text-xs font-semibold text-gray-500 uppercase whitespace-nowrap">Risk</th>
                 <th className="px-4 py-3 text-left text-xs font-semibold text-gray-500 uppercase whitespace-nowrap">Status</th>
                 <th className="px-4 py-3 text-left text-xs font-semibold text-gray-500 uppercase whitespace-nowrap">Recommended Action</th>
+                <th className="px-4 py-3 text-left text-xs font-semibold text-gray-500 uppercase whitespace-nowrap">Actions</th>
               </tr>
             </thead>
             <tbody className="bg-white divide-y divide-gray-200">
@@ -240,11 +262,31 @@ export default function Promises() {
                   <td className="px-4 py-4 whitespace-nowrap text-sm text-gray-700">
                     <span className="truncate max-w-[150px] block">{ptp.recommendedAction}</span>
                   </td>
+                  <td className="px-4 py-4 whitespace-nowrap">
+                    {ptp.status === 'PENDING' || ptp.status === 'DUE_TODAY' || ptp.status === 'DUE_SOON' ? (
+                      <div className="flex gap-2">
+                        <button 
+                          onClick={() => handleAction(ptp.id, 'KEPT')}
+                          className="px-2 py-1 bg-green-500 hover:bg-green-600 text-white text-xs font-bold rounded shadow-sm transition-colors"
+                        >
+                          Mark Kept
+                        </button>
+                        <button 
+                          onClick={() => handleAction(ptp.id, 'BROKEN')}
+                          className="px-2 py-1 bg-red-500 hover:bg-red-600 text-white text-xs font-bold rounded shadow-sm transition-colors"
+                        >
+                          Mark Broken
+                        </button>
+                      </div>
+                    ) : (
+                      <span className="text-xs text-gray-400 font-medium">Closed</span>
+                    )}
+                  </td>
                 </tr>
               ))}
               {filteredPromises.length === 0 && (
                 <tr>
-                  <td colSpan={10} className="px-6 py-12 text-center text-gray-500 text-sm">
+                  <td colSpan={11} className="px-6 py-12 text-center text-gray-500 text-sm">
                     No promises match your current filters.
                   </td>
                 </tr>

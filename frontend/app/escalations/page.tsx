@@ -3,6 +3,7 @@
 import { useState, useMemo } from 'react';
 import { Search, Filter, AlertTriangle, CheckCircle2, Clock, AlertOctagon, ArrowUpRight, FileText, UserCircle } from 'lucide-react';
 import Link from 'next/link';
+import { toast } from 'react-hot-toast';
 
 type Escalation = {
   id: string;
@@ -31,10 +32,29 @@ const mockEscalations: Escalation[] = [
 export default function Escalations() {
   const [activeFilter, setActiveFilter] = useState('All');
   const [searchTerm, setSearchTerm] = useState('');
+  const [escalations, setEscalations] = useState<Escalation[]>(mockEscalations);
+
+  const handleAction = (id: string, action: 'APPROVE' | 'REJECT') => {
+    setEscalations(prev => prev.map(esc => {
+      if (esc.id === id) {
+        return {
+          ...esc,
+          status: action === 'APPROVE' ? 'RESOLVED' : 'DISMISSED'
+        };
+      }
+      return esc;
+    }));
+    
+    if (action === 'APPROVE') {
+      toast.success(`AI Action Approved for Case ${id}`);
+    } else {
+      toast.error(`AI Action Overridden for Case ${id}`);
+    }
+  };
 
   // 1. Calculate Metrics Dynamically
   const metrics = useMemo(() => {
-    let total = mockEscalations.length;
+    let total = escalations.length;
     let newCount = 0;
     let highPriority = 0;
     let inReview = 0;
@@ -43,7 +63,7 @@ export default function Escalations() {
     let revenueAtRisk = 0;
     let revenueRecovered = 0;
 
-    mockEscalations.forEach(esc => {
+    escalations.forEach(esc => {
       if (esc.status === 'NEW') newCount++;
       if (esc.status === 'IN_REVIEW') inReview++;
       if (esc.status === 'RESOLVED') resolved++;
@@ -62,7 +82,7 @@ export default function Escalations() {
     });
 
     return { total, newCount, highPriority, inReview, resolved, recovered, revenueAtRisk, revenueRecovered };
-  }, []);
+  }, [escalations]);
 
   const formatCurrency = (val: number) => {
     return new Intl.NumberFormat('en-IN', { style: 'currency', currency: 'INR', maximumFractionDigits: 0 }).format(val);
@@ -70,7 +90,7 @@ export default function Escalations() {
 
   // 2. Filter Logic
   const filteredEscalations = useMemo(() => {
-    return mockEscalations.filter(esc => {
+    return escalations.filter(esc => {
       const searchStr = `${esc.customer} ${esc.id} ${esc.referenceId} ${esc.reason}`.toLowerCase();
       const searchMatch = searchStr.includes(searchTerm.toLowerCase());
       if (!searchMatch) return false;
@@ -78,7 +98,7 @@ export default function Escalations() {
       if (activeFilter === 'All') return true;
       return esc.status === activeFilter;
     });
-  }, [activeFilter, searchTerm]);
+  }, [activeFilter, searchTerm, escalations]);
 
   const filterOptions = ['All', 'NEW', 'IN_REVIEW', 'RESOLVED', 'RECOVERED', 'DISMISSED'];
 
@@ -182,6 +202,7 @@ export default function Escalations() {
                 <th className="px-4 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider whitespace-nowrap">Priority</th>
                 <th className="px-4 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider whitespace-nowrap">Status</th>
                 <th className="px-4 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider whitespace-nowrap">Created</th>
+                <th className="px-4 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider whitespace-nowrap">Actions</th>
               </tr>
             </thead>
             <tbody className="bg-white divide-y divide-gray-200">
@@ -248,11 +269,31 @@ export default function Escalations() {
                       {esc.createdAt}
                     </div>
                   </td>
+                  <td className="px-4 py-4 whitespace-nowrap">
+                    {esc.status === 'NEW' || esc.status === 'IN_REVIEW' ? (
+                      <div className="flex gap-2">
+                        <button 
+                          onClick={() => handleAction(esc.id, 'APPROVE')}
+                          className="px-2 py-1 bg-green-500 hover:bg-green-600 text-white text-xs font-bold rounded shadow-sm transition-colors"
+                        >
+                          Approve AI
+                        </button>
+                        <button 
+                          onClick={() => handleAction(esc.id, 'REJECT')}
+                          className="px-2 py-1 bg-gray-200 hover:bg-gray-300 text-gray-800 text-xs font-bold rounded shadow-sm transition-colors"
+                        >
+                          Override
+                        </button>
+                      </div>
+                    ) : (
+                      <span className="text-xs text-gray-400 font-medium">Resolved</span>
+                    )}
+                  </td>
                 </tr>
               ))}
               {filteredEscalations.length === 0 && (
                 <tr>
-                  <td colSpan={11} className="px-6 py-12 text-center text-gray-500 text-sm">
+                  <td colSpan={12} className="px-6 py-12 text-center text-gray-500 text-sm">
                     No escalations match your current filters.
                   </td>
                 </tr>
