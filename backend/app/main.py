@@ -37,6 +37,8 @@ from app.api.routes_audit import router as audit_router
 from app.api.routes_webhooks import router as webhooks_router
 from app.api.routes_escalations import router as escalations_router
 from app.api.routes_promises import router as promises_router
+from app.api.routes_agent import router as agent_router
+from app.api.routes_simulator import router as simulator_router
 
 app.include_router(dashboard_router)
 app.include_router(recovery_router)
@@ -45,6 +47,8 @@ app.include_router(audit_router)
 app.include_router(webhooks_router)
 app.include_router(escalations_router)
 app.include_router(promises_router)
+app.include_router(agent_router)
+app.include_router(simulator_router)
 
 from fastapi.responses import RedirectResponse
 
