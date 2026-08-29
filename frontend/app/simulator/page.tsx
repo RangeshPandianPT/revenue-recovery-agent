@@ -14,34 +14,33 @@ export default function Simulator() {
   const [results, setResults] = useState<any>(null);
   const [simulating, setSimulating] = useState(false);
 
-  const runSimulation = () => {
+  const runSimulation = async () => {
     setSimulating(true);
-    setTimeout(() => {
-      // Rule-based vs AI simulation logic
-      const ruleBasedRecoveryRate = 0.25;
-      const aiRecoveryRate = 0.60;
-
-      const ruleRecovered = inputs.revenueRisk * ruleBasedRecoveryRate;
-      const aiRecovered = inputs.revenueRisk * aiRecoveryRate;
-
+    try {
+      const response = await fetch('http://localhost:8000/api/simulator/run', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(inputs)
+      });
+      
+      if (!response.ok) {
+        throw new Error('Simulation failed');
+      }
+      
+      const data = await response.json();
       setResults({
         noRecovery: { recovered: 0, net: 0, cost: 0, rate: 0 },
-        ruleBased: {
-          recovered: ruleRecovered,
-          net: ruleRecovered - (inputs.cases * 15), // Assumed static cost per case
-          cost: inputs.cases * 15,
-          rate: ruleBasedRecoveryRate * 100,
-        },
-        ai: {
-          recovered: aiRecovered,
-          net: aiRecovered - (inputs.cases * 5), // AI optimizes strategy cost
-          cost: inputs.cases * 5,
-          rate: aiRecoveryRate * 100,
-        }
+        ruleBased: data.ruleBased,
+        ai: data.ai
       });
-      setSimulating(false);
+      
       toast.success("Simulation complete!");
-    }, 1000);
+    } catch (error) {
+      console.error(error);
+      toast.error("Failed to run dynamic simulation. Check backend.");
+    } finally {
+      setSimulating(false);
+    }
   };
 
   const formatCurrency = (val: number) => {
