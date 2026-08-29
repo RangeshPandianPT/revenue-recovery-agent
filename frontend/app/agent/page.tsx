@@ -12,20 +12,46 @@ export default function LiveAgent() {
     setAnalyzing(true);
     setResult(null);
 
-    // Mocking an agent analysis delay to simulate reasoning
-    setTimeout(() => {
-      setResult({
-        revenueRecovered: 8499,
-        strategy: 'Smart Retry',
-        confidence: 91,
-        policy: 'PASSED',
-        workflow: 'STOPPED',
-        reason: 'Payment successful',
-        rootCause: 'Temporary bank failure'
+    try {
+      const response = await fetch('http://localhost:8000/api/agent/analyze', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          case_id: 'DEMO-123',
+          event_type: 'PAYMENT_FAILURE',
+          amount: 8499,
+          customer_ltv: 50000,
+          customer_name: 'Acme Corp',
+          failure_reason: 'insufficient_funds',
+          previous_failures: 1
+        }),
       });
-      setAnalyzing(false);
+
+      if (!response.ok) {
+        throw new Error('Failed to analyze event');
+      }
+
+      const data = await response.json();
+      
+      setResult({
+        revenueRecovered: data.expected_net_revenue,
+        strategy: data.recommended_strategy,
+        confidence: Math.round(data.confidence * 100),
+        policy: data.requires_human_review ? 'REVIEW REQUIRED' : 'PASSED',
+        workflow: data.requires_human_review ? 'ESCALATED' : 'EXECUTED',
+        reason: data.reason,
+        rootCause: data.root_cause
+      });
+      
       toast.success('Agent analysis complete');
-    }, 2500);
+    } catch (error: any) {
+      console.error(error);
+      toast.error('Agent analysis failed. Ensure backend is running.');
+    } finally {
+      setAnalyzing(false);
+    }
   };
 
   return (
