@@ -22,6 +22,7 @@ This project was built to demonstrate a true "God Mode" view of autonomous AI op
 - **Bounded Execution & Policy Gates:** Ensures the AI operates safely within strict enterprise constraints, automatically routing high-value or high-risk cases to a human-in-the-loop escalation queue.
 - **B2B Promise-to-Pay Engine:** Tracks and manages deferred payments, converting broken promises into actionable workflows.
 - **Batch Simulation Engine:** Run high-volume simulations to directly compare the AI's dynamic recovery rate against traditional rule-based systems.
+- **Local & Cloud AI Flexibility:** Architected to support both cloud-hosted models (Google Gemini Pro) for maximum reasoning capabilities, and local open-source models (Qwen via Ollama) for strict enterprise data privacy and zero-cost local execution.
 
 ---
 
@@ -36,7 +37,7 @@ This project was built to demonstrate a true "God Mode" view of autonomous AI op
 **Backend (Server & AI)**
 - Framework: FastAPI (Python)
 - Database: SQLAlchemy (ORM), PostgreSQL / SQLite
-- AI Reasoning Engine: Google Gemini Pro
+- AI Reasoning Engine: Google Gemini Pro & Local Qwen (via Ollama)
 - Server: Uvicorn
 
 ---
