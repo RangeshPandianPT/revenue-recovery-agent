@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react';
 import LoadingState from '@/components/LoadingState';
 import EmptyState from '@/components/EmptyState';
+import LiveFeed from '@/components/LiveFeed';
 import { ArrowUpRight, IndianRupee, AlertCircle, Activity } from 'lucide-react';
 import toast from 'react-hot-toast';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
@@ -170,30 +171,35 @@ export default function Dashboard() {
         </div>
       </div>
 
-      {/* Real Chart */}
-      <div className="mt-8">
-        <h3 className="text-lg font-bold text-gray-900 mb-3">Revenue Recovery Chart</h3>
-        <div className="rounded-lg border border-gray-200 bg-white shadow-sm p-6 h-[400px]">
-          <ResponsiveContainer width="100%" height="100%">
-            <LineChart data={[
-              { name: 'Mon', recovered: 4000, atRisk: 2400 },
-              { name: 'Tue', recovered: 3000, atRisk: 1398 },
-              { name: 'Wed', recovered: 5000, atRisk: 9800 },
-              { name: 'Thu', recovered: 2780, atRisk: 3908 },
-              { name: 'Fri', recovered: 6890, atRisk: 4800 },
-              { name: 'Sat', recovered: 2390, atRisk: 3800 },
-              { name: 'Sun', recovered: 7490, atRisk: 4300 },
-            ]}>
-              <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#e5e7eb" />
-              <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{ fill: '#6b7280', fontSize: 12 }} dy={10} />
-              <YAxis axisLine={false} tickLine={false} tick={{ fill: '#6b7280', fontSize: 12 }} dx={-10} />
-              <Tooltip 
-                contentStyle={{ borderRadius: '8px', border: 'none', boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1)' }}
-              />
-              <Line type="monotone" dataKey="recovered" name="Recovered (₹)" stroke="#16a34a" strokeWidth={2} dot={{ r: 4, strokeWidth: 2, fill: '#16a34a' }} activeDot={{ r: 6 }} />
-              <Line type="monotone" dataKey="atRisk" name="At Risk (₹)" stroke="#dc2626" strokeWidth={2} dot={{ r: 4, strokeWidth: 2, fill: '#dc2626' }} activeDot={{ r: 6 }} />
-            </LineChart>
-          </ResponsiveContainer>
+      {/* Chart & Live Feed */}
+      <div className="mt-8 grid grid-cols-1 lg:grid-cols-3 gap-8">
+        <div className="lg:col-span-2">
+          <h3 className="text-lg font-bold text-gray-900 mb-3">Revenue Recovery Chart</h3>
+          <div className="rounded-lg border border-gray-200 bg-white shadow-sm p-6 h-[400px]">
+            <ResponsiveContainer width="100%" height="100%">
+              <LineChart data={[
+                { name: 'Mon', recovered: 4000, atRisk: 2400 },
+                { name: 'Tue', recovered: 3000, atRisk: 1398 },
+                { name: 'Wed', recovered: 5000, atRisk: 9800 },
+                { name: 'Thu', recovered: 2780, atRisk: 3908 },
+                { name: 'Fri', recovered: 6890, atRisk: 4800 },
+                { name: 'Sat', recovered: 2390, atRisk: 3800 },
+                { name: 'Sun', recovered: 7490, atRisk: 4300 },
+              ]}>
+                <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#e5e7eb" />
+                <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{ fill: '#6b7280', fontSize: 12 }} dy={10} />
+                <YAxis axisLine={false} tickLine={false} tick={{ fill: '#6b7280', fontSize: 12 }} dx={-10} />
+                <Tooltip 
+                  contentStyle={{ borderRadius: '8px', border: 'none', boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1)' }}
+                />
+                <Line type="monotone" dataKey="recovered" name="Recovered (₹)" stroke="#16a34a" strokeWidth={2} dot={{ r: 4, strokeWidth: 2, fill: '#16a34a' }} activeDot={{ r: 6 }} />
+                <Line type="monotone" dataKey="atRisk" name="At Risk (₹)" stroke="#dc2626" strokeWidth={2} dot={{ r: 4, strokeWidth: 2, fill: '#dc2626' }} activeDot={{ r: 6 }} />
+              </LineChart>
+            </ResponsiveContainer>
+          </div>
+        </div>
+        <div className="lg:col-span-1 h-full">
+          <LiveFeed />
         </div>
       </div>
 
