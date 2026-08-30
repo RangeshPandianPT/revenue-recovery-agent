@@ -88,7 +88,7 @@ def run_batch_simulation(db: Session, merchant_id: str, num_cases: int = 100):
                 "recovery_probability": prob,
             }
             try:
-                if llm_calls < 3:
+                if False: # Disabled for fast demo rendering: llm_calls < 3
                     from app.agents.qwen_agent import OpenRouterAgent
                     agent = OpenRouterAgent()
                     decision = agent.analyze_and_decide_sync(context)
