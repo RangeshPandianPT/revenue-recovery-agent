@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import { Search, Filter, AlertTriangle, CheckCircle2, Clock, AlertOctagon, ArrowUpRight, FileText, UserCircle } from 'lucide-react';
 import Link from 'next/link';
 import { toast } from 'react-hot-toast';
@@ -32,23 +32,59 @@ const mockEscalations: Escalation[] = [
 export default function Escalations() {
   const [activeFilter, setActiveFilter] = useState('All');
   const [searchTerm, setSearchTerm] = useState('');
-  const [escalations, setEscalations] = useState<Escalation[]>(mockEscalations);
+  const [escalations, setEscalations] = useState<Escalation[]>([]);
+  const [loading, setLoading] = useState(true);
 
-  const handleAction = (id: string, action: 'APPROVE' | 'REJECT') => {
-    setEscalations(prev => prev.map(esc => {
-      if (esc.id === id) {
-        return {
-          ...esc,
-          status: action === 'APPROVE' ? 'RESOLVED' : 'DISMISSED'
-        };
+  useEffect(() => {
+    fetch('http://localhost:8000/api/escalations')
+      .then(res => res.json())
+      .then(data => {
+        const mapped = (data.items || []).map((item: any) => ({
+          id: item.id,
+          customer: item.customer_name || 'Unknown',
+          referenceId: item.opportunity_id,
+          amount: item.amount || 0,
+          reason: item.reason || 'Escalated by Policy',
+          riskLevel: item.risk_type === 'HIGH' ? 'HIGH' : 'MEDIUM',
+          confidence: 85, // Mapped for now
+          recommendedAction: item.ai_recommendation || 'Unknown',
+          priority: item.priority || 'MEDIUM',
+          status: item.status || 'NEW',
+          createdAt: item.created_at ? new Date(item.created_at).toLocaleString() : new Date().toLocaleString()
+        }));
+        setEscalations(mapped);
+        setLoading(false);
+      })
+      .catch(err => {
+        console.error("Failed to fetch escalations:", err);
+        setLoading(false);
+      });
+  }, []);
+
+  const handleAction = async (id: string, action: 'APPROVE' | 'REJECT') => {
+    try {
+      const apiAction = action === 'APPROVE' ? 'approve' : 'reject';
+      await fetch(`http://localhost:8000/api/escalations/${id}/${apiAction}`, {
+        method: 'POST'
+      });
+      
+      setEscalations(prev => prev.map(esc => {
+        if (esc.id === id) {
+          return {
+            ...esc,
+            status: action === 'APPROVE' ? 'RESOLVED' : 'DISMISSED'
+          };
+        }
+        return esc;
+      }));
+      
+      if (action === 'APPROVE') {
+        toast.success(`AI Action Approved for Case ${id}`);
+      } else {
+        toast.error(`AI Action Overridden for Case ${id}`);
       }
-      return esc;
-    }));
-    
-    if (action === 'APPROVE') {
-      toast.success(`AI Action Approved for Case ${id}`);
-    } else {
-      toast.error(`AI Action Overridden for Case ${id}`);
+    } catch(err) {
+      toast.error(`Action failed`);
     }
   };
 
