@@ -1,20 +1,33 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Search, Filter, ArrowUpRight, ArrowDownRight, Users, Star, AlertTriangle, Zap, TrendingUp, Download } from 'lucide-react';
 import Link from 'next/link';
 
-// Mock Customer Data
+// Mock fallback in case backend is down
 const mockCustomers = [
   { id: 'CUST-84920', name: 'Acme Corp', email: 'billing@acme.com', ltv: 845000, transactions: 142, successRate: 98, failedPayments: 1, revenueAtRisk: 27500, revenueRecovered: 27500, probability: 87, segment: 'VIP', status: 'ACTIVE' },
   { id: 'CUST-84921', name: 'Beta Ltd', email: 'finance@betaltd.co', ltv: 125000, transactions: 45, successRate: 85, failedPayments: 3, revenueAtRisk: 15400, revenueRecovered: 0, probability: 45, segment: 'REGULAR', status: 'RECOVERING' },
-  { id: 'CUST-84922', name: 'Charlie Inc', email: 'accounts@charlie.inc', ltv: 34000, transactions: 12, successRate: 60, failedPayments: 5, revenueAtRisk: 8900, revenueRecovered: 0, probability: 12, segment: 'AT_RISK', status: 'CHURN_RISK' },
-  { id: 'CUST-84923', name: 'Delta Co', email: 'pay@deltaco.io', ltv: 1250000, transactions: 310, successRate: 99, failedPayments: 2, revenueAtRisk: 125000, revenueRecovered: 125000, probability: 92, segment: 'VIP', status: 'ACTIVE' },
-  { id: 'CUST-84924', name: 'Echo LLC', email: 'hello@echollc.net', ltv: 8900, transactions: 3, successRate: 100, failedPayments: 0, revenueAtRisk: 0, revenueRecovered: 0, probability: 100, segment: 'HIGH_INTENT', status: 'ACTIVE' },
 ];
 
 export default function Customers() {
   const [searchTerm, setSearchTerm] = useState('');
+  const [customers, setCustomers] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    fetch('http://localhost:8000/api/customers')
+      .then(res => res.json())
+      .then(data => {
+        setCustomers(data.items && data.items.length > 0 ? data.items : mockCustomers);
+        setLoading(false);
+      })
+      .catch(err => {
+        console.error("Failed to fetch customers:", err);
+        setCustomers(mockCustomers);
+        setLoading(false);
+      });
+  }, []);
 
   const formatCurrency = (val: number) => {
     return new Intl.NumberFormat('en-IN', {
@@ -163,7 +176,7 @@ export default function Customers() {
               </tr>
             </thead>
             <tbody className="bg-white divide-y divide-gray-200">
-              {mockCustomers.map((cust) => (
+              {customers.map((cust) => (
                 <tr key={cust.id} className="hover:bg-gray-50 transition-colors">
                   <td className="px-6 py-4 whitespace-nowrap">
                     <div className="text-sm font-medium text-gray-900">{cust.name}</div>
