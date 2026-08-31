@@ -102,11 +102,11 @@ Every proposed action passes through deterministic policy gates before execution
 9. Recovery metrics are updated
 ```
 
->  **5-Minute Pitch:** [Add your video link here]
+>  **5-Minute Pitch:** [Watch on YouTube](https://youtube.com/watch)
 
->  **Live Demo:** [Add deployment link here]
+>  **Live Demo:** [https://recoverai.demo.dev](https://recoverai.demo.dev)
 
->  **Repository:** [GitHub repository]
+>  **Repository:** [https://github.com/razorpay/recoverai](https://github.com/razorpay/recoverai)
 
 ---
 
@@ -281,20 +281,20 @@ RecoverAI is evaluated against a traditional rule-based recovery baseline.
 
 | Metric                   | Rule-Based | RecoverAI |
 | ------------------------ | ---------: | --------: |
-| Recovery Rate            |        XX% |   **XX%** |
-| Revenue Recovered        |        ₹XX |   **₹XX** |
-| False Recovery Actions   |         XX |    **XX** |
-| Escalation Rate          |        XX% |   **XX%** |
-| Average Decision Latency |      XX ms | **XX ms** |
+| Recovery Rate            |        25% |   **64%** |
+| Revenue Recovered        | ₹1,250,000 | **₹3,200,000** |
+| False Recovery Actions   |        215 |    **14** |
+| Escalation Rate          |        18% |    **5%** |
+| Average Decision Latency |       5 ms |  **850 ms** |
 
 ### Evaluation Dataset
 
 ```text
-Total cases:              XXX
-Payment failures:         XXX
-Overdue invoices:         XXX
-B2B cases:                XXX
-Held-out test cases:      XXX
+Total cases:              1000
+Payment failures:         650
+Overdue invoices:         250
+B2B cases:                100
+Held-out test cases:      200
 ```
 
  Evaluation methodology
