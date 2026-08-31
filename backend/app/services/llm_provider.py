@@ -176,16 +176,81 @@ class OpenRouterProvider(LLMProvider):
             }
 
 class GeminiProvider(LLMProvider):
-    def __init__(self, api_key: str):
+    def __init__(self, api_key: str, model: str = "gemini-1.5-flash"):
         self.api_key = api_key
+        self.model = model
+        self.base_url = f"https://generativelanguage.googleapis.com/v1beta/models/{self.model}:generateContent"
 
     async def analyze_risk(self, context: Dict[str, Any]) -> Dict[str, Any]:
-        # TODO: Implement Gemini API call
-        return {"status": "mock_gemini_risk", "probability": 0.85}
+        prompt = f"""
+        Analyze the risk of the following failed transaction/invoice and output ONLY a JSON object.
+        Context: {json.dumps(context)}
+        
+        Required JSON structure:
+        {{
+            "root_cause": "string explaining the cause",
+            "recovery_probability": float between 0 and 1,
+            "confidence": float between 0 and 1
+        }}
+        """
+        try:
+            async with httpx.AsyncClient() as client:
+                response = await client.post(
+                    f"{self.base_url}?key={self.api_key}",
+                    json={
+                        "contents": [{"parts": [{"text": prompt}]}],
+                        "generationConfig": {"responseMimeType": "application/json"}
+                    },
+                    timeout=30.0
+                )
+                response.raise_for_status()
+                data = response.json()
+                content = data["candidates"][0]["content"]["parts"][0]["text"]
+                return json.loads(content)
+        except Exception as e:
+            print(f"Gemini analyze_risk error: {e}")
+            return {
+                "root_cause": "UNKNOWN_ERROR",
+                "recovery_probability": 0.5,
+                "confidence": 0.5
+            }
 
     async def select_strategy(self, case_id: str, context: Dict[str, Any]) -> Dict[str, Any]:
-        # TODO: Implement Gemini API call
-        return {"strategy": "SMART_RETRY"}
+        prompt = f"""
+        Select the best recovery strategy for this case and output ONLY a JSON object.
+        Case ID: {case_id}
+        Context: {json.dumps(context)}
+        
+        Available strategies: SMART_RETRY, PAYMENT_LINK, EMAIL_REMINDER, WHATSAPP_REMINDER, CALL_AGENT, LEGAL_ESCALATION
+        
+        Required JSON structure:
+        {{
+            "recommended_strategy": "string (one of the available strategies)",
+            "expected_recovery": float (expected amount to recover),
+            "reason": "string explaining the reason"
+        }}
+        """
+        try:
+            async with httpx.AsyncClient() as client:
+                response = await client.post(
+                    f"{self.base_url}?key={self.api_key}",
+                    json={
+                        "contents": [{"parts": [{"text": prompt}]}],
+                        "generationConfig": {"responseMimeType": "application/json"}
+                    },
+                    timeout=30.0
+                )
+                response.raise_for_status()
+                data = response.json()
+                content = data["candidates"][0]["content"]["parts"][0]["text"]
+                return json.loads(content)
+        except Exception as e:
+            print(f"Gemini select_strategy error: {e}")
+            return {
+                "recommended_strategy": "SMART_RETRY",
+                "expected_recovery": context.get("amount", 0.0),
+                "reason": "Fallback strategy due to AI provider error."
+            }
 
 class MockProvider(LLMProvider):
     async def analyze_risk(self, context: Dict[str, Any]) -> Dict[str, Any]:
