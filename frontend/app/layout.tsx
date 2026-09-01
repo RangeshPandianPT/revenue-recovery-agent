@@ -1,52 +1,31 @@
-import type { Metadata } from "next";
-import { Geist, Geist_Mono } from "next/font/google";
-import "./globals.css";
-import Sidebar from "@/components/layout/Sidebar";
-import Header from "@/components/layout/Header";
-import { Toaster } from 'react-hot-toast';
+import './globals.css';
+import type { Metadata } from 'next';
+import { Inter } from 'next/font/google';
+import Sidebar from '../components/layout/Sidebar';
+import Header from '../components/layout/Header';
 
-const geistSans = Geist({
-  variable: "--font-geist-sans",
-  subsets: ["latin"],
-});
-
-const geistMono = Geist_Mono({
-  variable: "--font-geist-mono",
-  subsets: ["latin"],
-});
+const inter = Inter({ subsets: ['latin'] });
 
 export const metadata: Metadata = {
-  title: "RecoverAI - Autonomous Revenue Recovery",
-  description: "Find revenue at risk. Choose the right intervention. Recover it with bounded AI workflows.",
+  title: 'RecoverAI - AI Recovery Agent',
+  description: 'AI-powered revenue recovery agent',
 };
 
 export default function RootLayout({
   children,
-}: Readonly<{
+}: {
   children: React.ReactNode;
-}>) {
+}) {
   return (
-    <html lang="en" className="h-full bg-gray-50">
-      <body
-        className={`${geistSans.variable} ${geistMono.variable} antialiased h-full flex overflow-hidden text-gray-900 bg-gray-50 selection:bg-blue-200`}
-      >
+    <html lang="en">
+      <body className={`${inter.className} bg-gray-50 flex h-screen overflow-hidden`}>
         <Sidebar />
-        <div className="flex-1 flex flex-col min-w-0 overflow-hidden bg-gray-50">
+        <div className="flex flex-col flex-1 min-w-0 overflow-hidden">
           <Header />
-          <main className="flex-1 overflow-y-auto p-6 lg:p-8">
+          <main className="flex-1 overflow-y-auto bg-gray-50 p-6">
             {children}
           </main>
         </div>
-        <Toaster 
-          position="top-right" 
-          toastOptions={{
-            style: {
-              background: '#fff',
-              color: '#333',
-              border: '1px solid #eaeaea'
-            }
-          }}
-        />
       </body>
     </html>
   );
