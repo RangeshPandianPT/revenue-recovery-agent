@@ -10,8 +10,20 @@ from fastapi import Request
 @router.post("/analyze", response_model=AgentDecision)
 async def analyze_opportunity(request: Request):
     try:
+        from app.services.communication_service import communication_service
         context = await request.json()
         decision = await agent.analyze_and_decide(context)
+        
+        # If a phone number is provided in context, dispatch real SMS
+        phone = context.get("customer", {}).get("phone") or context.get("phone")
+        if phone and decision.recommended_action in ["PAYMENT_LINK", "REMINDER"]:
+            import asyncio
+            # Fire and forget SMS dispatch
+            asyncio.create_task(communication_service.dispatch_intervention(
+                strategy=decision.recommended_action, 
+                phone=phone
+            ))
+            
         return decision
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))

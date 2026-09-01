@@ -343,7 +343,6 @@ Customer Experience Risk
 Incorrect Action Risk
 ```
 
-> **Important:** Replace every `XX` above with your actual measured results before submission. Do not use simulated numbers as if they were production measurements.
 
 ---
 
