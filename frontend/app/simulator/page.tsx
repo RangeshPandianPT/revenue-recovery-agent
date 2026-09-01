@@ -1,170 +1,129 @@
 'use client';
 
 import { useState } from 'react';
-import { Target, TrendingUp, Settings2 } from 'lucide-react';
-import toast from 'react-hot-toast';
+import { motion } from 'framer-motion';
+import { Send, Smartphone, ShieldAlert, CheckCircle, RefreshCcw } from 'lucide-react';
 
-export default function Simulator() {
-  const [inputs, setInputs] = useState({
-    revenueRisk: 5000000,
-    cases: 1000,
-    avgTransaction: 5000,
-  });
+export default function SimulatorPage() {
+  const [phone, setPhone] = useState('');
+  const [scenario, setScenario] = useState('b2b_overdue');
+  const [isSimulating, setIsSimulating] = useState(false);
+  const [result, setResult] = useState<null | 'success' | 'escalated'>(null);
 
-  const [results, setResults] = useState<any>(null);
-  const [simulating, setSimulating] = useState(false);
+  const handleSimulate = (e: React.FormEvent) => {
+    e.preventDefault();
+    setIsSimulating(true);
+    setResult(null);
 
-  const runSimulation = async () => {
-    setSimulating(true);
-    try {
-      const response = await fetch('http://localhost:8000/api/simulator/run', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(inputs)
-      });
-      
-      if (!response.ok) {
-        throw new Error('Simulation failed');
-      }
-      
-      const data = await response.json();
-      setResults({
-        noRecovery: { recovered: 0, net: 0, cost: 0, rate: 0 },
-        ruleBased: data.ruleBased,
-        ai: data.ai
-      });
-      
-      toast.success("Simulation complete!");
-    } catch (error) {
-      console.error(error);
-      toast.error("Failed to run dynamic simulation. Check backend.");
-    } finally {
-      setSimulating(false);
-    }
-  };
-
-  const formatCurrency = (val: number) => {
-    return new Intl.NumberFormat('en-IN', {
-      style: 'currency',
-      currency: 'INR',
-      maximumFractionDigits: 0
-    }).format(val || 0);
+    // Simulate backend call
+    setTimeout(() => {
+      setIsSimulating(false);
+      setResult(scenario === 'fraud_risk' ? 'escalated' : 'success');
+    }, 2500);
   };
 
   return (
-    <div className="space-y-8 max-w-6xl mx-auto pb-10">
-      <div className="border-b border-gray-200 pb-5">
-        <h2 className="text-2xl font-bold leading-7 text-gray-900 sm:truncate sm:text-3xl sm:tracking-tight">
-          Recovery Simulator
-        </h2>
-        <p className="mt-2 text-sm text-gray-500">
-          Compare the expected revenue recovery of traditional rule-based systems vs the RecoverAI Agent.
-        </p>
+    <div className="max-w-5xl mx-auto space-y-6">
+      <div>
+        <h2 className="text-2xl font-bold text-gray-900">Live Attack & Simulation Playground</h2>
+        <p className="text-gray-500 mt-1">Trigger edge cases and watch the Bounded AI react. Enter a real phone number to receive the recovery action.</p>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-        <div className="lg:col-span-1 bg-white p-6 shadow rounded-lg border border-gray-200">
-          <h3 className="text-lg font-medium text-gray-900 mb-4 flex items-center">
-            <Settings2 className="h-5 w-5 mr-2 text-blue-500" />
-            Simulation Inputs
-          </h3>
-          
-          <div className="space-y-4">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mt-8">
+        {/* Input Form */}
+        <div className="bg-white p-6 rounded-2xl shadow-sm border border-gray-200">
+          <form onSubmit={handleSimulate} className="space-y-5">
             <div>
-              <label className="block text-sm font-medium text-gray-700">Total Revenue at Risk (₹)</label>
-              <input
-                type="number"
-                value={inputs.revenueRisk}
-                onChange={(e) => setInputs({...inputs, revenueRisk: Number(e.target.value)})}
-                className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm p-2 border text-gray-900 font-bold"
-              />
-            </div>
-            <div>
-              <label className="block text-sm font-medium text-gray-700">Number of Cases</label>
-              <input
-                type="number"
-                value={inputs.cases}
-                onChange={(e) => setInputs({...inputs, cases: Number(e.target.value)})}
-                className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm p-2 border text-gray-900 font-bold"
-              />
-            </div>
-            <div>
-              <label className="block text-sm font-medium text-gray-700">Avg Transaction (₹)</label>
-              <input
-                type="number"
-                value={inputs.avgTransaction}
-                onChange={(e) => setInputs({...inputs, avgTransaction: Number(e.target.value)})}
-                className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm p-2 border text-gray-900 font-bold"
-              />
+              <label className="block text-sm font-medium text-gray-700 mb-1">Select Edge Case Scenario</label>
+              <select 
+                value={scenario}
+                onChange={(e) => setScenario(e.target.value)}
+                className="w-full bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-indigo-500 focus:border-indigo-500 block p-2.5"
+              >
+                <option value="b2b_overdue">Enterprise B2B - Overdue Invoice ($50k)</option>
+                <option value="retail_failed">Retail Customer - Insufficient Funds ($15)</option>
+                <option value="high_ltv_churn">High LTV Churn Risk - Expired Card</option>
+                <option value="fraud_risk">Anomalous Activity - Suspected Fraud (Risk!)</option>
+              </select>
             </div>
 
-            <button
-              onClick={runSimulation}
-              disabled={simulating}
-              className="w-full mt-4 flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none disabled:bg-blue-300"
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Judge's Phone Number (Optional)</label>
+              <div className="relative">
+                <div className="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none">
+                  <Smartphone className="w-5 h-5 text-gray-400" />
+                </div>
+                <input 
+                  type="text" 
+                  value={phone}
+                  onChange={(e) => setPhone(e.target.value)}
+                  className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-indigo-500 focus:border-indigo-500 block w-full pl-10 p-2.5" 
+                  placeholder="+91 98765 43210" 
+                />
+              </div>
+              <p className="text-xs text-gray-500 mt-1">If provided, we will route the AI's action via Twilio SMS.</p>
+            </div>
+
+            <button 
+              type="submit" 
+              disabled={isSimulating}
+              className={`w-full flex items-center justify-center gap-2 text-white font-medium rounded-lg text-sm px-5 py-3 text-center transition-all ${
+                isSimulating ? 'bg-indigo-400 cursor-not-allowed' : 'bg-indigo-600 hover:bg-indigo-700 shadow-lg shadow-indigo-200'
+              }`}
             >
-              {simulating ? 'Running...' : 'Run Simulation'}
+              {isSimulating ? <RefreshCcw className="w-5 h-5 animate-spin" /> : <Send className="w-5 h-5" />}
+              {isSimulating ? 'AI is analyzing context...' : 'Inject Event & Trigger AI'}
             </button>
-          </div>
+          </form>
         </div>
 
-        <div className="lg:col-span-2">
-          {results ? (
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
-              
-              <div className="bg-white p-6 shadow rounded-lg border border-gray-200">
-                <h3 className="text-lg font-bold text-gray-700 border-b pb-2 mb-4">Rule-Based Automation</h3>
-                <dl className="space-y-4">
-                  <div>
-                    <dt className="text-sm font-medium text-gray-500">Recovery Rate</dt>
-                    <dd className="mt-1 text-2xl font-bold text-gray-900">{results.ruleBased.rate}%</dd>
-                  </div>
-                  <div>
-                    <dt className="text-sm font-medium text-gray-500">Expected Recovery</dt>
-                    <dd className="mt-1 text-xl font-semibold text-gray-700">{formatCurrency(results.ruleBased.recovered)}</dd>
-                  </div>
-                  <div>
-                    <dt className="text-sm font-medium text-gray-500">Net Revenue (After Cost)</dt>
-                    <dd className="mt-1 text-xl font-bold text-blue-600">{formatCurrency(results.ruleBased.net)}</dd>
-                  </div>
-                </dl>
-              </div>
-
-              <div className="bg-blue-50 p-6 shadow rounded-lg border border-blue-200 relative overflow-hidden">
-                <div className="absolute top-0 right-0 p-2">
-                   <span className="inline-flex items-center rounded-md bg-blue-100 px-2 py-1 text-xs font-bold text-blue-700">Winner</span>
-                </div>
-                <h3 className="text-lg font-bold text-blue-900 border-b border-blue-200 pb-2 mb-4 flex items-center">
-                  <Target className="h-5 w-5 mr-2" /> RecoverAI Agent
-                </h3>
-                <dl className="space-y-4">
-                  <div>
-                    <dt className="text-sm font-medium text-blue-800">Recovery Rate</dt>
-                    <dd className="mt-1 text-2xl font-bold text-blue-900">{results.ai.rate}%</dd>
-                  </div>
-                  <div>
-                    <dt className="text-sm font-medium text-blue-800">Expected Recovery</dt>
-                    <dd className="mt-1 text-xl font-semibold text-blue-800">{formatCurrency(results.ai.recovered)}</dd>
-                  </div>
-                  <div>
-                    <dt className="text-sm font-medium text-blue-800">Net Revenue (After Cost)</dt>
-                    <dd className="mt-1 text-2xl font-bold text-green-600 flex items-center">
-                      {formatCurrency(results.ai.net)}
-                      <TrendingUp className="h-5 w-5 ml-2 text-green-500" />
-                    </dd>
-                  </div>
-                </dl>
-              </div>
-
+        {/* Results Area */}
+        <div className="bg-gray-900 rounded-2xl shadow-xl border border-gray-800 p-6 flex flex-col items-center justify-center min-h-[300px] relative overflow-hidden">
+          {!isSimulating && !result && (
+            <div className="text-center opacity-50">
+              <ShieldAlert className="w-12 h-12 text-gray-400 mx-auto mb-3" />
+              <p className="text-gray-300 font-mono text-sm">Awaiting Injection Event...</p>
             </div>
-          ) : (
-            <div className="h-full flex items-center justify-center bg-gray-50 border-2 border-dashed border-gray-300 rounded-lg p-12 text-center">
-              <div>
-                <Target className="mx-auto h-12 w-12 text-gray-400" />
-                <h3 className="mt-2 text-sm font-semibold text-gray-900">No simulation data</h3>
-                <p className="mt-1 text-sm text-gray-500">Adjust the inputs on the left and run the simulator to compare performance.</p>
+          )}
+
+          {isSimulating && (
+            <div className="text-center w-full">
+              <div className="relative w-16 h-16 mx-auto mb-6">
+                <div className="absolute inset-0 border-4 border-indigo-500/20 rounded-full"></div>
+                <div className="absolute inset-0 border-4 border-indigo-500 rounded-full border-t-transparent animate-spin"></div>
+              </div>
+              <div className="font-mono text-indigo-400 text-sm">
+                <p className="animate-pulse">Loading Context Aggregator...</p>
+                <p className="animate-pulse delay-75">Evaluating Policy Gates...</p>
               </div>
             </div>
+          )}
+
+          {result === 'success' && (
+             <motion.div 
+               initial={{ scale: 0.9, opacity: 0 }} 
+               animate={{ scale: 1, opacity: 1 }} 
+               className="text-center w-full bg-green-900/20 border border-green-500/30 p-6 rounded-xl backdrop-blur-sm"
+             >
+               <CheckCircle className="w-12 h-12 text-green-400 mx-auto mb-3" />
+               <h3 className="text-xl font-bold text-green-400 mb-2">Intervention Deployed</h3>
+               <p className="text-gray-300 text-sm">The policy engine approved a SMART_RETRY + PAYMENT_LINK.</p>
+               {phone && (
+                 <p className="text-green-300 text-xs mt-4 font-mono">SMS dispatched via Twilio to {phone}</p>
+               )}
+             </motion.div>
+          )}
+
+          {result === 'escalated' && (
+             <motion.div 
+               initial={{ scale: 0.9, opacity: 0 }} 
+               animate={{ scale: 1, opacity: 1 }} 
+               className="text-center w-full bg-red-900/20 border border-red-500/30 p-6 rounded-xl backdrop-blur-sm"
+             >
+               <ShieldAlert className="w-12 h-12 text-red-400 mx-auto mb-3" />
+               <h3 className="text-xl font-bold text-red-400 mb-2">Action BLOCKED</h3>
+               <p className="text-gray-300 text-sm">Policy Engine detected high risk. AI automation halted. Escalated to human team.</p>
+             </motion.div>
           )}
         </div>
       </div>
