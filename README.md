@@ -76,8 +76,6 @@ Every proposed action passes through deterministic policy gates before execution
 
 #  Live Demo
 
-# Live Demo
-
 ### Dashboard
 
 ![RecoverAI Dashboard](https://github.com/user-attachments/assets/000827af-d09c-49dd-861e-85cd0d05deda)
