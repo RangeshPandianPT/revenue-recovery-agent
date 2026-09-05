@@ -20,10 +20,10 @@ class AgentDecision(BaseModel):
     reason: str
 
 class OpenRouterAgent:
-    def __init__(self):
+    def __init__(self, base_url: Optional[str] = None):
         self.api_key = settings.GEMINI_API_KEY
         self.model = settings.GEMINI_MODEL
-        self.base_url = "https://generativelanguage.googleapis.com/v1beta/openai/chat/completions"
+        self.base_url = base_url or "https://generativelanguage.googleapis.com/v1beta/openai/chat/completions"
         
     async def analyze_and_decide(self, context: Dict[str, Any]) -> AgentDecision:
         prompt = self._build_prompt(context)
@@ -114,3 +114,6 @@ class OpenRouterAgent:
             requires_human_review=True,
             reason=f"Fallback decision used due to LLM error: {error}"
         )
+
+
+QwenAgent = OpenRouterAgent
