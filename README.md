@@ -76,17 +76,19 @@ Every proposed action passes through deterministic policy gates before execution
 
 #  Live Demo
 
+# Live Demo
+
 ### Dashboard
 
-![RecoverAI Dashboard](./docs/screenshots/dashboard.png)
+![RecoverAI Dashboard](https://github.com/user-attachments/assets/000827af-d09c-49dd-861e-85cd0d05deda)
 
 ### AI Recovery Agent
 
-![RecoverAI Agent](./docs/screenshots/agent.png)
+![RecoverAI Agent](https://github.com/user-attachments/assets/1784f3b8-1cd9-47d4-87c1-ff48ff0f968a)
 
-### Recovery Decision
+### Live Attack & Simulation Playground
 
-![Recovery Decision](./docs/screenshots/decision.png)
+![Recovery Decision](https://github.com/user-attachments/assets/9385102c-125f-4abd-9f58-5593519d12c3)
 
 **Demo flow:**
 
@@ -100,13 +102,7 @@ Every proposed action passes through deterministic policy gates before execution
 7. The action is executed
 8. The outcome is recorded
 9. Recovery metrics are updated
-```
 
->  **5-Minute Pitch:** [Watch on YouTube](https://youtube.com/watch)
-
->  **Live Demo:** [https://recoverai.demo.dev](https://recoverai.demo.dev)
-
->  **Repository:** [https://github.com/razorpay/recoverai](https://github.com/razorpay/recoverai)
 
 ---
 
